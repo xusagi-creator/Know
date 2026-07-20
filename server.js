@@ -24,7 +24,14 @@ const broadcastMsg = (m) => {
 };
 const userList = () => Object.values(online)
   .map(u => ({ username: u.username, isAdmin: u.isAdmin, joinedAt: u.joinedAt }));
-const pushUsers = () => io.emit('userlist', userList());
+const adminUserList = () => Object.values(online)
+  .map(u => ({ username: u.username, email: u.email, isAdmin: u.isAdmin, joinedAt: u.joinedAt, typingOff: u.typingOff }));
+const pushUsers = () => {
+  io.emit('userlist', userList());
+  for (const [sid, u] of Object.entries(online)) {
+    if (u.isAdmin) io.to(sid).emit('adminUserlist', adminUserList());
+  }
+};
 
 io.on('connection', (socket) => {
   socket.on('join', ({ username, email, password }, cb) => {
@@ -44,8 +51,8 @@ io.on('connection', (socket) => {
     if (prevName && prevName !== cleanName) sys(`${prevName} is now known as ${cleanName}`);
     knownUsers[cleanEmail] = cleanName;
 
-    online[socket.id] = { username: cleanName, email: cleanEmail, isAdmin, joinedAt: Date.now() };
-    cb({ ok: true, isAdmin, settings, history: messages, users: userList() });
+    online[socket.id] = { username: cleanName, email: cleanEmail, isAdmin, joinedAt: Date.now(), typingOff: false };
+    cb({ ok: true, isAdmin, settings, history: messages, users: userList(), adminUsers: isAdmin ? adminUserList() : null });
     sys(`${cleanName} joined the chat`);
     pushUsers();
   });
@@ -61,7 +68,16 @@ io.on('connection', (socket) => {
 
   socket.on('typing', () => {
     const u = online[socket.id];
-    if (u) socket.broadcast.emit('typing', u.username);
+    if (u && !u.typingOff) socket.broadcast.emit('typing', u.username);
+  });
+
+  socket.on('admin:toggleTyping', (username) => {
+    const admin = online[socket.id]; if (!admin || !admin.isAdmin) return;
+    const target = Object.values(online).find(u => u.username === username);
+    if (!target) return;
+    target.typingOff = !target.typingOff;
+    sys(`${username}'s typing indicator was ${target.typingOff ? 'disabled' : 'enabled'} by ${admin.username}`);
+    pushUsers();
   });
 
   socket.on('admin:deleteMsg', (id) => {

@@ -110,6 +110,13 @@
   #lightbox img{max-width:92vw;max-height:92vh;border-radius:10px}
   .linkRow{display:flex;gap:8px;margin-top:6px}
   .linkRow input{flex:1;font-size:13px}
+  .adminRow{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid var(--border);font-size:12.5px}
+  .adminRow .aInfo{flex:1;min-width:0}
+  .adminRow .aName{font-weight:700;font-size:13px}
+  .adminRow .aEmail{color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .adminRow .aActions{display:flex;gap:6px;flex-shrink:0}
+  .adminRow .aActions button{padding:5px 8px;font-size:11px;background:var(--panel2);color:var(--text)}
+  .adminRow .aActions button.on{background:var(--danger);color:#fff}
 
   /* Toasts */
   #toasts{position:fixed;top:16px;right:16px;z-index:50;display:flex;flex-direction:column;gap:8px}
@@ -208,6 +215,8 @@
     <div class="field"><label>Join password</label><input id="setPassword"></div>
     <button class="btn-primary" onclick="saveSettings()">Save changes</button>
     <button class="btn-danger" style="width:100%;margin-top:8px" onclick="confirmClearChat()">🗑️ Clear entire chat</button>
+    <h3 style="margin:18px 0 8px">Users & Emails</h3>
+    <div id="adminUserTable" style="max-height:220px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -229,7 +238,7 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
 let socket, me = {}, isAdmin = false, pendingImg = null, typingTimeout = null, othersTyping = {};
-let atBottom = true;
+let atBottom = true, joining = false, eventsBound = false;
 
 /* ---------- toast helper ---------- */
 function toast(msg, type=''){
@@ -242,6 +251,7 @@ function toast(msg, type=''){
 
 /* ---------- join flow ---------- */
 function doJoin(){
+  if (joining) return;
   const username = document.getElementById('h_username').value;
   const email = document.getElementById('h_email').value;
   const password = document.getElementById('h_password').value;
@@ -249,6 +259,7 @@ function doJoin(){
   errEl.textContent = '';
   if (!username.trim() || !email.trim() || !password){ errEl.textContent = 'Please fill in all fields.'; return; }
 
+  joining = true;
   const btn = document.getElementById('joinBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Connecting...';
 
@@ -261,6 +272,7 @@ function doJoin(){
     document.getElementById('home').classList.add('hidden');
     document.getElementById('chat').classList.add('show');
     if (isAdmin) document.getElementById('settingsBtnEl').classList.remove('hidden');
+    if (isAdmin && res.adminUsers) renderAdminUsers(res.adminUsers);
     applySettings(res.settings);
     document.getElementById('messages').innerHTML = '';
     res.history.forEach(m => renderMsg(m, true));
@@ -271,13 +283,17 @@ function doJoin(){
   bindSocketEvents();
 }
 function resetJoinBtn(){
+  joining = false;
   const btn = document.getElementById('joinBtn');
   btn.disabled = false; btn.textContent = 'Join Room';
 }
 
 function bindSocketEvents(){
+  if (eventsBound) return; // guard: never attach listeners twice on the same socket
+  eventsBound = true;
   socket.on('message', (m) => renderMsg(m, false));
   socket.on('userlist', renderUserList);
+  socket.on('adminUserlist', renderAdminUsers);
   socket.on('deleteMsg', (id) => { document.getElementById('m'+id)?.remove(); });
   socket.on('clearChat', () => { document.getElementById('messages').innerHTML = ''; toast('Chat was cleared'); });
   socket.on('settingsUpdated', (s) => { applySettings(s); toast('Room settings updated'); });
@@ -401,6 +417,23 @@ function clearImage(){
 }
 
 /* ---------- admin actions ---------- */
+function renderAdminUsers(list){
+  const box = document.getElementById('adminUserTable');
+  if (!box) return;
+  box.innerHTML = '';
+  list.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'adminRow';
+    row.innerHTML = `${avatarHtml(u.username)}
+      <div class="aInfo"><div class="aName">${escapeHtml(u.username)}${u.isAdmin ? ' 👑' : ''}</div><div class="aEmail">${escapeHtml(u.email)}</div></div>
+      <div class="aActions">
+        <button class="${u.typingOff ? 'on' : ''}" onclick="toggleTyping('${u.username.replace(/'/g,"\\'")}')">${u.typingOff ? 'Typing off' : 'Typing on'}</button>
+        ${u.username !== me.username ? `<button onclick="kick('${u.username.replace(/'/g,"\\'")}')">Kick</button>` : ''}
+      </div>`;
+    box.appendChild(row);
+  });
+}
+function toggleTyping(username){ socket.emit('admin:toggleTyping', username); }
 function delMsg(id){ socket.emit('admin:deleteMsg', id); }
 function kick(username){ if (confirm(`Kick ${username} from the room?`)) socket.emit('admin:kick', username); }
 function confirmClearChat(){ if (confirm('Clear the entire chat for everyone?')){ socket.emit('admin:clearChat'); closeModal('settingsModal'); } }
