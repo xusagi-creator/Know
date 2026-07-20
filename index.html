@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Chatzy</title>
+<style>
+  :root{
+    --bg:#0d0f14; --panel:#151821; --panel2:#1c202b; --panel3:#242938;
+    --text:#e9ebf1; --muted:#8a90a2; --accent:#5b8cff; --accent2:#8b6bff;
+    --danger:#ff5b6e; --success:#3ddc84; --sys:#6b7280; --border:#242938;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overflow:hidden;
+  }
+  .hidden{display:none !important}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:#333a4a;border-radius:3px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ---------- Auth screens ---------- */
+  .authWrap{height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;
+    background:radial-gradient(circle at 20% 20%, #171c2b 0%, var(--bg) 55%);}
+  .card{background:var(--panel);padding:34px;border-radius:16px;width:360px;max-width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,.5); border:1px solid var(--border)}
+  .logo{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));margin-bottom:14px}
+  .card h1{margin:0 0 4px;font-size:21px;font-weight:700}
+  .card p{color:var(--muted);margin:0 0 20px;font-size:13px;line-height:1.5}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600}
+  input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--border);
+    background:var(--panel2);color:var(--text);font-size:15px;outline:none;transition:border-color .15s}
+  input:focus{border-color:var(--accent)}
+  button{cursor:pointer;border:none;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;
+    transition:transform .08s, opacity .15s, background .15s}
+  button:active{transform:scale(0.97)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;width:100%;padding:12px}
+  .btn-ghost{background:var(--panel2);color:var(--text)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .err{color:var(--danger);font-size:13px;margin:-4px 0 10px;min-height:16px}
+  .hint{margin:14px 0 0;font-size:11px;color:var(--muted);line-height:1.5;padding:10px;background:var(--panel2);border-radius:8px}
+  .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+    border-radius:50%;display:inline-block;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- Chat layout ---------- */
+  #chat{display:none;height:100dvh}
+  #chat.show{display:flex}
+  #sidebar{width:250px;flex-shrink:0;background:var(--panel);padding:16px;display:flex;flex-direction:column;
+    border-right:1px solid var(--border)}
+  .roomHead{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .roomname{font-weight:700;font-size:16px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .connDot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 6px var(--success)}
+  .connDot.off{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+  #sidebar .side{background:var(--panel2);color:var(--text);font-size:13px;text-align:left;
+    padding:9px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+  #sidebar .side:hover{background:var(--panel3)}
+  #sidebar h3{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+  #userlist{list-style:none;padding:0;margin:0;overflow-y:auto;flex:1}
+  #userlist li{display:flex;align-items:center;gap:8px;padding:7px 4px;font-size:14px;border-radius:8px}
+  #userlist li:hover{background:var(--panel2)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
+  .avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+  .uname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .crown{font-size:11px}
+  .kickBtn{cursor:pointer;color:var(--danger);font-size:11px;opacity:0;transition:opacity .15s;padding:2px 4px}
+  #userlist li:hover .kickBtn{opacity:1}
+
+  #main{flex:1;display:flex;flex-direction:column;min-width:0}
+  #topbar{padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border);
+    font-weight:600;display:flex;align-items:center;gap:10px}
+  #menuBtn{display:none;background:var(--panel2);color:var(--text);padding:8px 10px}
+  #messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
+  .msgRow{display:flex;gap:10px;margin-bottom:2px;max-width:78%}
+  .msgRow.grouped{margin-top:-6px}
+  .msgRow .avatar{margin-top:2px}
+  .msgCol{min-width:0}
+  .msg .meta{font-size:11.5px;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:8px}
+  .msg .meta .name{color:var(--text);font-weight:700}
+  .msg .bubble{background:var(--panel2);padding:9px 13px;border-radius:4px 14px 14px 14px;display:inline-block;
+    word-wrap:break-word;white-space:pre-wrap;font-size:14.5px;line-height:1.45;max-width:100%}
+  .msg img{max-width:240px;border-radius:10px;display:block;margin-top:4px;cursor:zoom-in}
+  .del{cursor:pointer;color:var(--danger);font-size:11px;opacity:.7}
+  .del:hover{opacity:1}
+  .system{color:var(--sys);font-size:12px;text-align:center;margin:10px 0}
+  .system::before,.system::after{content:'';display:inline-block;width:26px;height:1px;background:var(--border);vertical-align:middle;margin:0 8px}
+  #typingRow{padding:0 16px 6px;font-size:12px;color:var(--muted);min-height:18px;font-style:italic}
+  #jumpBtn{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);background:var(--accent);
+    color:#fff;padding:7px 14px;border-radius:20px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.4);display:none}
+  #messagesWrap{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
+
+  #inputbar{display:flex;gap:8px;padding:12px;background:var(--panel);border-top:1px solid var(--border);align-items:flex-end}
+  #inputbar textarea{flex:1;margin:0;resize:none;max-height:120px;font-family:inherit;padding:11px 13px}
+  #imgPreviewWrap{padding:0 12px;background:var(--panel)}
+  #imgPreviewWrap img{max-height:70px;border-radius:8px;margin:6px 0}
+  .sendBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:11px 16px}
+  #imgBtn{background:var(--panel2);color:var(--text);padding:11px 13px}
+
+  /* Modals */
+  .modalBg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:30;padding:16px}
+  .close{float:right;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px}
+  #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:40;cursor:zoom-out}
+  #lightbox img{max-width:92vw;max-height:92vh;border-radius:10px}
+  .linkRow{display:flex;gap:8px;margin-top:6px}
+  .linkRow input{flex:1;font-size:13px}
+
+  /* Toasts */
+  #toasts{position:fixed;top:16px;right:16px;z-index:50;display:flex;flex-direction:column;gap:8px}
+  .toast{background:var(--panel3);border:1px solid var(--border);color:var(--text);padding:11px 16px;
+    border-radius:9px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:slideIn .2s ease}
+  .toast.error{border-color:var(--danger)}
+  .toast.success{border-color:var(--success)}
+  @keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:800px){
+    .card{padding:26px 22px}
+    #sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:14}
+    #sidebarOverlay.open{display:block}
+    #sidebar{position:fixed;top:0;left:0;height:100%;width:80vw;max-width:280px;z-index:15;
+      transform:translateX(-100%);transition:transform .22s ease}
+    #sidebar.open{transform:translateX(0)}
+    #menuBtn{display:inline-flex}
+    .msgRow{max-width:88%}
+    .msg img{max-width:60vw}
+    #toasts{left:16px;right:16px;top:12px}
+    .toast{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- HOME: choose to create or join -->
+<div id="home" class="authWrap">
+  <div class="card">
+    <div class="logo">💬</div>
+    <h1>Chatzy</h1>
+    <p>Create a room or join with an invite link.</p>
+    <div class="field">
+      <label>Username</label>
+      <input id="h_username" placeholder="e.g. nizhat" maxlength="24">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input id="h_email" type="email" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label>Room password</label>
+      <input id="h_password" type="password" placeholder="Ask the admin, or set one to create a room">
+    </div>
+    <div class="err" id="homeErr"></div>
+    <button class="btn-primary" id="joinBtn" onclick="doJoin()">Join Room</button>
+    <div class="hint">💡 Add 3 trailing spaces after your username to join as <b>admin</b>.</div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chat">
+  <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <div id="sidebar">
+    <div class="roomHead">
+      <span class="connDot" id="connDot"></span>
+      <div class="roomname" id="roomNameLabel">Chatzy Room</div>
+    </div>
+    <button class="side" onclick="copyLink()">🔗 Copy invite link</button>
+    <button class="side hidden" id="settingsBtnEl" onclick="openSettings()">⚙️ Room settings</button>
+    <button class="side" onclick="leaveRoom()">🚪 Leave room</button>
+    <h3>Online — <span id="onlineCount">0</span></h3>
+    <ul id="userlist"></ul>
+  </div>
+
+  <div id="main">
+    <div id="topbar">
+      <button id="menuBtn" onclick="toggleSidebar()">☰</button>
+      <span id="topbarLabel">Chat</span>
+    </div>
+    <div id="messagesWrap">
+      <div id="messages"></div>
+      <button id="jumpBtn" onclick="scrollDown(true)">↓ New messages</button>
+    </div>
+    <div id="typingRow"></div>
+    <div id="imgPreviewWrap" class="hidden"><img id="imgPreview"><button class="btn-ghost" style="margin-left:8px;padding:4px 8px" onclick="clearImage()">✕ remove</button></div>
+    <div id="inputbar">
+      <button id="imgBtn" onclick="document.getElementById('imgInput').click()" title="Send image">🖼️</button>
+      <input type="file" id="imgInput" accept="image/png,image/jpeg,image/gif,image/webp" class="hidden" onchange="pickImage(event)">
+      <textarea id="msgInput" rows="1" placeholder="Type a message..." onkeydown="handleKey(event)" oninput="autoGrow(this); notifyTyping()"></textarea>
+      <button class="sendBtn" onclick="sendMsg()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div id="settingsModal" class="modalBg hidden">
+  <div class="card">
+    <span class="close" onclick="closeModal('settingsModal')">✕</span>
+    <h1>Room Settings</h1>
+    <p>Admin only</p>
+    <div class="field"><label>Room name</label><input id="setRoomName"></div>
+    <div class="field"><label>Join password</label><input id="setPassword"></div>
+    <button class="btn-primary" onclick="saveSettings()">Save changes</button>
+    <button class="btn-danger" style="width:100%;margin-top:8px" onclick="confirmClearChat()">🗑️ Clear entire chat</button>
+  </div>
+</div>
+
+<!-- Invite link modal -->
+<div id="linkModal" class="modalBg hidden">
+  <div class="card">
+    <span class="close" onclick="closeModal('linkModal')">✕</span>
+    <h1>Invite link</h1>
+    <p>Share this link — friends still need the room password to get in.</p>
+    <div class="linkRow">
+      <input id="linkOutput" readonly>
+      <button class="btn-primary" style="width:auto" onclick="copyLinkFromModal()">Copy</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+let socket, me = {}, isAdmin = false, pendingImg = null, typingTimeout = null, othersTyping = {};
+let atBottom = true;
+
+/* ---------- toast helper ---------- */
+function toast(msg, type=''){
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+/* ---------- join flow ---------- */
+function doJoin(){
+  const username = document.getElementById('h_username').value;
+  const email = document.getElementById('h_email').value;
+  const password = document.getElementById('h_password').value;
+  const errEl = document.getElementById('homeErr');
+  errEl.textContent = '';
+  if (!username.trim() || !email.trim() || !password){ errEl.textContent = 'Please fill in all fields.'; return; }
+
+  const btn = document.getElementById('joinBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Connecting...';
+
+  socket = io();
+  socket.on('connect_error', () => { errEl.textContent = 'Could not reach the server.'; resetJoinBtn(); });
+  socket.emit('join', { username, email, password }, (res) => {
+    if (res.error){ errEl.textContent = res.error; resetJoinBtn(); return; }
+    me = { username: username.trim().slice(0,24).replace(/\s+/g,' ') };
+    isAdmin = res.isAdmin;
+    document.getElementById('home').classList.add('hidden');
+    document.getElementById('chat').classList.add('show');
+    if (isAdmin) document.getElementById('settingsBtnEl').classList.remove('hidden');
+    applySettings(res.settings);
+    document.getElementById('messages').innerHTML = '';
+    res.history.forEach(m => renderMsg(m, true));
+    renderUserList(res.users);
+    scrollDown(true);
+    toast(`Welcome, ${me.username}${isAdmin ? ' (admin)' : ''}!`, 'success');
+  });
+  bindSocketEvents();
+}
+function resetJoinBtn(){
+  const btn = document.getElementById('joinBtn');
+  btn.disabled = false; btn.textContent = 'Join Room';
+}
+
+function bindSocketEvents(){
+  socket.on('message', (m) => renderMsg(m, false));
+  socket.on('userlist', renderUserList);
+  socket.on('deleteMsg', (id) => { document.getElementById('m'+id)?.remove(); });
+  socket.on('clearChat', () => { document.getElementById('messages').innerHTML = ''; toast('Chat was cleared'); });
+  socket.on('settingsUpdated', (s) => { applySettings(s); toast('Room settings updated'); });
+  socket.on('kicked', () => { toast('You were removed from the room.', 'error'); setTimeout(() => location.reload(), 1200); });
+  socket.on('typing', (name) => {
+    othersTyping[name] = Date.now();
+    renderTyping();
+  });
+  socket.on('disconnect', () => setConn(false));
+  socket.on('connect', () => setConn(true));
+}
+function setConn(on){ document.getElementById('connDot').classList.toggle('off', !on); }
+
+function renderTyping(){
+  const now = Date.now();
+  const names = Object.keys(othersTyping).filter(n => now - othersTyping[n] < 3000);
+  document.getElementById('typingRow').textContent = names.length
+    ? (names.length === 1 ? `${names[0]} is typing…` : `${names.join(', ')} are typing…`) : '';
+}
+setInterval(renderTyping, 1000);
+
+let typingSentAt = 0;
+function notifyTyping(){
+  const now = Date.now();
+  if (now - typingSentAt > 1500){ socket.emit('typing'); typingSentAt = now; }
+}
+
+function applySettings(s){
+  document.getElementById('roomNameLabel').textContent = s.roomName;
+  document.getElementById('topbarLabel').textContent = s.roomName;
+  document.title = s.roomName + ' — Chatzy';
+}
+
+/* ---------- avatars ---------- */
+const AV_COLORS = ['#5b8cff','#8b6bff','#ff6b9e','#ff9d5b','#3ddc84','#5bd0ff','#ffd15b','#c85bff'];
+function avatarColor(name){ let h=0; for (const c of name) h = (h*31 + c.charCodeAt(0)) % 997; return AV_COLORS[h % AV_COLORS.length]; }
+function avatarHtml(name){ return `<div class="avatar" style="background:${avatarColor(name)}">${escapeHtml(name[0]?.toUpperCase()||'?')}</div>`; }
+
+/* ---------- messages ---------- */
+let lastSender = null;
+function renderMsg(m, isHistory){
+  const box = document.getElementById('messages');
+  const nearBottom = isHistory || (box.scrollHeight - box.scrollTop - box.clientHeight < 120);
+
+  if (m.type === 'system'){
+    const div = document.createElement('div');
+    div.className = 'system'; div.textContent = m.text;
+    box.appendChild(div); lastSender = null;
+  } else {
+    const grouped = lastSender === m.from;
+    const row = document.createElement('div');
+    row.className = 'msgRow' + (grouped ? ' grouped' : '');
+    row.id = 'm' + m.id;
+    const time = new Date(m.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    row.innerHTML = `${grouped ? '<div style="width:26px;flex-shrink:0"></div>' : avatarHtml(m.from)}
+      <div class="msgCol">
+        ${grouped ? '' : `<div class="meta"><span class="name">${escapeHtml(m.from)}</span><span>${time}</span></div>`}
+        <div class="msg"><span class="bubble">${m.text ? escapeHtml(m.text) : ''}${m.img ? `<img src="${m.img}" onclick="openLightbox('${m.img}')">` : ''}</span>
+        ${isAdmin ? ` <span class="del" onclick="delMsg('${m.id}')">delete</span>` : ''}</div>
+      </div>`;
+    box.appendChild(row);
+    lastSender = m.from;
+  }
+  if (nearBottom) scrollDown(); else document.getElementById('jumpBtn').style.display = 'block';
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s??''; return d.innerHTML; }
+function scrollDown(force){
+  const b = document.getElementById('messages');
+  if (force || atBottom) b.scrollTop = b.scrollHeight;
+  document.getElementById('jumpBtn').style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('messages').addEventListener('scroll', function(){
+    atBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 40;
+    if (atBottom) document.getElementById('jumpBtn').style.display = 'none';
+  });
+});
+
+/* ---------- user list ---------- */
+function renderUserList(list){
+  const ul = document.getElementById('userlist');
+  ul.innerHTML = '';
+  list.forEach(u => {
+    const li = document.createElement('li');
+    li.innerHTML = `${avatarHtml(u.username)}<span class="uname">${escapeHtml(u.username)}</span>${u.isAdmin ? '<span class="crown">👑</span>' : ''}` +
+      (isAdmin && u.username !== me.username ? `<span class="kickBtn" onclick="kick('${u.username.replace(/'/g,"\\'")}')">kick</span>` : '');
+    ul.appendChild(li);
+  });
+  document.getElementById('onlineCount').textContent = list.length;
+}
+
+/* ---------- sending ---------- */
+function handleKey(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } }
+function autoGrow(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+
+function sendMsg(){
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text && !pendingImg) return;
+  socket.emit('message', { text, img: pendingImg });
+  input.value = ''; input.style.height = 'auto';
+  clearImage();
+}
+function pickImage(e){
+  const file = e.target.files[0]; if (!file) return;
+  if (file.type === 'image/svg+xml'){ toast('SVG images are not allowed.', 'error'); return; }
+  if (file.size > 3_500_000){ toast('Please pick an image under ~3.5MB.', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingImg = reader.result;
+    document.getElementById('imgPreview').src = pendingImg;
+    document.getElementById('imgPreviewWrap').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+function clearImage(){
+  pendingImg = null;
+  document.getElementById('imgPreviewWrap').classList.add('hidden');
+  document.getElementById('imgInput').value = '';
+}
+
+/* ---------- admin actions ---------- */
+function delMsg(id){ socket.emit('admin:deleteMsg', id); }
+function kick(username){ if (confirm(`Kick ${username} from the room?`)) socket.emit('admin:kick', username); }
+function confirmClearChat(){ if (confirm('Clear the entire chat for everyone?')){ socket.emit('admin:clearChat'); closeModal('settingsModal'); } }
+function openSettings(){
+  document.getElementById('setRoomName').value = document.getElementById('roomNameLabel').textContent;
+  document.getElementById('setPassword').value = '';
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function saveSettings(){
+  const roomName = document.getElementById('setRoomName').value;
+  const joinPassword = document.getElementById('setPassword').value;
+  socket.emit('admin:updateSettings', { roomName, joinPassword });
+  closeModal('settingsModal');
+}
+
+/* ---------- misc UI ---------- */
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function openLightbox(src){ document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+function toggleSidebar(force){
+  const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebarOverlay');
+  const open = force !== undefined ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open', open); ov.classList.toggle('open', open);
+}
+function copyLink(){ document.getElementById('linkOutput').value = location.origin + location.pathname; document.getElementById('linkModal').classList.remove('hidden'); }
+function copyLinkFromModal(){
+  const el = document.getElementById('linkOutput'); el.select();
+  navigator.clipboard.writeText(el.value).then(() => toast('Link copied!', 'success'));
+}
+function leaveRoom(){ if (confirm('Leave the room?')) location.reload(); }
+</script>
+</body>
+</html>
