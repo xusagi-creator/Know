@@ -4,126 +4,171 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Chatzy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0d0f14; --panel:#151821; --panel2:#1c202b; --panel3:#242938;
-    --text:#e9ebf1; --muted:#8a90a2; --accent:#5b8cff; --accent2:#8b6bff;
-    --danger:#ff5b6e; --success:#3ddc84; --sys:#6b7280; --border:#242938;
+    /* Ink navy base with a warm ember accent — cozy late-night group-chat, not corporate-blue */
+    --bg:#0a0c13; --bg-glow:#141a2b;
+    --panel:#11141d; --panel2:#171b26; --panel3:#1f2431;
+    --text:#eef0f6; --muted:#7c8399; --faint:#4d5468;
+    --accent:#ff8a5c; --accent-dim:#c96a45; --teal:#45d6c4;
+    --danger:#ff5b70; --success:#45d6c4; --sys:#5b6178; --border:#1e2330;
+    --font-display:'Space Grotesk',system-ui,sans-serif;
+    --font-body:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
     margin:0; background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    overflow:hidden;
+    font-family:var(--font-body); overflow:hidden; -webkit-font-smoothing:antialiased;
   }
   .hidden{display:none !important}
   ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-thumb{background:#333a4a;border-radius:3px}
+  ::-webkit-scrollbar-thumb{background:#2a2f3f;border-radius:3px}
   ::-webkit-scrollbar-track{background:transparent}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 
   /* ---------- Auth screens ---------- */
-  .authWrap{height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;
-    background:radial-gradient(circle at 20% 20%, #171c2b 0%, var(--bg) 55%);}
-  .card{background:var(--panel);padding:34px;border-radius:16px;width:360px;max-width:100%;
-    box-shadow:0 20px 60px rgba(0,0,0,.5); border:1px solid var(--border)}
-  .logo{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-    font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));margin-bottom:14px}
-  .card h1{margin:0 0 4px;font-size:21px;font-weight:700}
-  .card p{color:var(--muted);margin:0 0 20px;font-size:13px;line-height:1.5}
-  .field{margin-bottom:12px}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600}
-  input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--border);
-    background:var(--panel2);color:var(--text);font-size:15px;outline:none;transition:border-color .15s}
-  input:focus{border-color:var(--accent)}
-  button{cursor:pointer;border:none;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;
-    transition:transform .08s, opacity .15s, background .15s}
+  .authWrap{height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(520px circle at 15% 12%, rgba(255,138,92,.10), transparent 60%),
+      radial-gradient(600px circle at 85% 88%, rgba(69,214,196,.08), transparent 60%),
+      var(--bg);}
+  .card{background:var(--panel);padding:36px;border-radius:18px;width:380px;max-width:100%;position:relative;
+    box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.03); border:1px solid var(--border);
+    animation:cardIn .35s cubic-bezier(.2,.9,.25,1)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .logo{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:linear-gradient(150deg,var(--accent),var(--accent-dim));margin-bottom:16px;
+    box-shadow:0 8px 20px rgba(255,138,92,.25)}
+  .card h1{margin:0 0 5px;font-size:23px;font-weight:700;font-family:var(--font-display);letter-spacing:-.02em}
+  .card p{color:var(--muted);margin:0 0 22px;font-size:13.5px;line-height:1.55}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.06em;font-family:var(--font-mono)}
+  input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);
+    background:var(--panel2);color:var(--text);font-size:15px;outline:none;transition:border-color .15s,box-shadow .15s;font-family:var(--font-body)}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,138,92,.14)}
+  input::placeholder{color:var(--faint)}
+  button{cursor:pointer;border:none;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600;
+    transition:transform .08s, opacity .15s, background .15s, box-shadow .15s; font-family:var(--font-body)}
   button:active{transform:scale(0.97)}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;width:100%;padding:12px}
+  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .btn-primary{background:linear-gradient(150deg,var(--accent),var(--accent-dim));color:#181008;width:100%;padding:13px;
+    box-shadow:0 6px 18px rgba(255,138,92,.22)}
+  .btn-primary:hover:not(:disabled){box-shadow:0 8px 24px rgba(255,138,92,.32)}
   .btn-ghost{background:var(--panel2);color:var(--text)}
-  .btn-danger{background:var(--danger);color:#fff}
-  .err{color:var(--danger);font-size:13px;margin:-4px 0 10px;min-height:16px}
-  .hint{margin:14px 0 0;font-size:11px;color:var(--muted);line-height:1.5;padding:10px;background:var(--panel2);border-radius:8px}
-  .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+  .btn-ghost:hover{background:var(--panel3)}
+  .btn-danger{background:var(--danger);color:#1a0a0d}
+  .err{color:var(--danger);font-size:13px;margin:-5px 0 10px;min-height:16px;font-weight:500}
+  .hint{margin:16px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6;padding:11px 12px;
+    background:var(--panel2);border-radius:9px;border:1px dashed var(--border);font-family:var(--font-mono)}
+  .spinner{width:14px;height:14px;border:2px solid rgba(0,0,0,.25);border-top-color:#181008;
     border-radius:50%;display:inline-block;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* ---------- Chat layout ---------- */
   #chat{display:none;height:100dvh}
   #chat.show{display:flex}
-  #sidebar{width:250px;flex-shrink:0;background:var(--panel);padding:16px;display:flex;flex-direction:column;
+  #sidebar{width:260px;flex-shrink:0;background:var(--panel);padding:18px 16px;display:flex;flex-direction:column;
     border-right:1px solid var(--border)}
-  .roomHead{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-  .roomname{font-weight:700;font-size:16px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .connDot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 6px var(--success)}
-  .connDot.off{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+  .roomHead{display:flex;align-items:center;gap:9px;margin-bottom:16px}
+  .roomname{font-weight:700;font-size:16.5px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-family:var(--font-display);letter-spacing:-.01em}
+  .connDot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 8px var(--success);
+    animation:pulse 2.4s ease-in-out infinite}
+  .connDot.off{background:var(--danger);box-shadow:0 0 8px var(--danger);animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
   #sidebar .side{background:var(--panel2);color:var(--text);font-size:13px;text-align:left;
-    padding:9px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
-  #sidebar .side:hover{background:var(--panel3)}
-  #sidebar h3{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+    padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:9px;border:1px solid transparent}
+  #sidebar .side:hover{background:var(--panel3);border-color:var(--border)}
+  #sidebar h3{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.09em;margin:18px 0 9px;
+    font-family:var(--font-mono);display:flex;align-items:center;gap:6px}
   #userlist{list-style:none;padding:0;margin:0;overflow-y:auto;flex:1}
-  #userlist li{display:flex;align-items:center;gap:8px;padding:7px 4px;font-size:14px;border-radius:8px}
+  #userlist li{display:flex;align-items:center;gap:9px;padding:8px 6px;font-size:14px;border-radius:9px;transition:background .12s}
   #userlist li:hover{background:var(--panel2)}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
-  .avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 5px var(--success)}
+  .avatar{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:#11141d;flex-shrink:0;font-family:var(--font-display)}
   .uname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
   .crown{font-size:11px}
-  .kickBtn{cursor:pointer;color:var(--danger);font-size:11px;opacity:0;transition:opacity .15s;padding:2px 4px}
+  .kickBtn{cursor:pointer;color:var(--danger);font-size:10.5px;opacity:0;transition:opacity .15s;padding:3px 6px;
+    font-family:var(--font-mono);border-radius:5px}
+  .kickBtn:hover{background:rgba(255,91,112,.12)}
   #userlist li:hover .kickBtn{opacity:1}
+  #emptyUsers{color:var(--faint);font-size:12px;padding:8px 6px;font-style:italic}
 
-  #main{flex:1;display:flex;flex-direction:column;min-width:0}
-  #topbar{padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border);
-    font-weight:600;display:flex;align-items:center;gap:10px}
-  #menuBtn{display:none;background:var(--panel2);color:var(--text);padding:8px 10px}
-  #messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
-  .msgRow{display:flex;gap:10px;margin-bottom:2px;max-width:78%}
-  .msgRow.grouped{margin-top:-6px}
+  #main{flex:1;display:flex;flex-direction:column;min-width:0;background:
+    radial-gradient(900px circle at 50% -10%, rgba(255,138,92,.035), transparent 60%)}
+  #topbar{padding:13px 18px;background:var(--panel);border-bottom:1px solid var(--border);
+    font-weight:700;display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:15px}
+  #menuBtn{display:none;background:var(--panel2);color:var(--text);padding:8px 11px}
+  #messages{flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column}
+  #emptyChat{margin:auto;text-align:center;color:var(--faint);font-size:13.5px;padding:40px}
+  #emptyChat .big{font-size:30px;display:block;margin-bottom:8px}
+  .msgRow{display:flex;gap:11px;margin-bottom:3px;max-width:74%;animation:msgIn .18s ease}
+  @keyframes msgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .msgRow.grouped{margin-top:-8px}
   .msgRow .avatar{margin-top:2px}
   .msgCol{min-width:0}
-  .msg .meta{font-size:11.5px;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:8px}
-  .msg .meta .name{color:var(--text);font-weight:700}
-  .msg .bubble{background:var(--panel2);padding:9px 13px;border-radius:4px 14px 14px 14px;display:inline-block;
-    word-wrap:break-word;white-space:pre-wrap;font-size:14.5px;line-height:1.45;max-width:100%}
-  .msg img{max-width:240px;border-radius:10px;display:block;margin-top:4px;cursor:zoom-in}
-  .del{cursor:pointer;color:var(--danger);font-size:11px;opacity:.7}
-  .del:hover{opacity:1}
-  .system{color:var(--sys);font-size:12px;text-align:center;margin:10px 0}
-  .system::before,.system::after{content:'';display:inline-block;width:26px;height:1px;background:var(--border);vertical-align:middle;margin:0 8px}
-  #typingRow{padding:0 16px 6px;font-size:12px;color:var(--muted);min-height:18px;font-style:italic}
-  #jumpBtn{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);background:var(--accent);
-    color:#fff;padding:7px 14px;border-radius:20px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.4);display:none}
+  .msg .meta{font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:8px;font-family:var(--font-mono)}
+  .msg .meta .name{color:var(--text);font-weight:600;font-family:var(--font-body)}
+  .msg .bubble{background:var(--panel2);padding:10px 14px;border-radius:4px 14px 14px 14px;display:inline-block;
+    word-wrap:break-word;white-space:pre-wrap;font-size:14.5px;line-height:1.48;max-width:100%;border:1px solid var(--border)}
+  .msg img{max-width:240px;border-radius:10px;display:block;margin-top:4px;cursor:zoom-in;transition:opacity .12s}
+  .msg img:hover{opacity:.88}
+  .del{cursor:pointer;color:var(--danger);font-size:10.5px;opacity:0;transition:opacity .15s;font-family:var(--font-mono);margin-left:2px}
+  .msgRow:hover .del{opacity:.75}
+  .del:hover{opacity:1 !important}
+  .system{color:var(--sys);font-size:11.5px;text-align:center;margin:12px 0;font-family:var(--font-mono);
+    display:flex;align-items:center;gap:10px}
+  .system::before,.system::after{content:'';flex:1;height:1px;background:var(--border)}
+  #typingRow{padding:0 18px 7px;font-size:12px;color:var(--muted);min-height:18px;font-style:italic;font-family:var(--font-mono)}
+  #jumpBtn{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);background:var(--accent);
+    color:#181008;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;
+    box-shadow:0 6px 18px rgba(255,138,92,.35);display:none}
   #messagesWrap{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
 
-  #inputbar{display:flex;gap:8px;padding:12px;background:var(--panel);border-top:1px solid var(--border);align-items:flex-end}
-  #inputbar textarea{flex:1;margin:0;resize:none;max-height:120px;font-family:inherit;padding:11px 13px}
-  #imgPreviewWrap{padding:0 12px;background:var(--panel)}
-  #imgPreviewWrap img{max-height:70px;border-radius:8px;margin:6px 0}
-  .sendBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:11px 16px}
-  #imgBtn{background:var(--panel2);color:var(--text);padding:11px 13px}
+  #inputbar{display:flex;gap:9px;padding:14px;background:var(--panel);border-top:1px solid var(--border);align-items:flex-end}
+  #inputbar textarea{flex:1;margin:0;resize:none;max-height:120px;font-family:var(--font-body);padding:12px 14px}
+  #imgPreviewWrap{padding:0 14px;background:var(--panel);display:flex;align-items:center}
+  #imgPreviewWrap img{max-height:64px;border-radius:8px;margin:8px 0;border:1px solid var(--border)}
+  .sendBtn{background:linear-gradient(150deg,var(--accent),var(--accent-dim));color:#181008;padding:12px 18px;
+    box-shadow:0 4px 14px rgba(255,138,92,.22)}
+  #imgBtn{background:var(--panel2);color:var(--text);padding:12px 14px}
+  #imgBtn:hover{background:var(--panel3)}
 
   /* Modals */
-  .modalBg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:30;padding:16px}
-  .close{float:right;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px}
-  #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:40;cursor:zoom-out}
-  #lightbox img{max-width:92vw;max-height:92vh;border-radius:10px}
+  .modalBg{position:fixed;inset:0;background:rgba(6,7,11,.65);backdrop-filter:blur(3px);display:flex;align-items:center;
+    justify-content:center;z-index:30;padding:16px;animation:fadeIn .15s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .close{float:right;color:var(--muted);cursor:pointer;font-size:16px;padding:3px 5px;border-radius:6px}
+  .close:hover{color:var(--text);background:var(--panel2)}
+  #lightbox{position:fixed;inset:0;background:rgba(4,5,8,.9);display:none;align-items:center;justify-content:center;z-index:40;cursor:zoom-out}
+  #lightbox img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
   .linkRow{display:flex;gap:8px;margin-top:6px}
-  .linkRow input{flex:1;font-size:13px}
-  .adminRow{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid var(--border);font-size:12.5px}
+  .linkRow input{flex:1;font-size:13px;font-family:var(--font-mono)}
+  .adminRow{display:flex;align-items:center;gap:9px;padding:9px 6px;border-bottom:1px solid var(--border);font-size:12.5px}
+  .adminRow:last-child{border-bottom:none}
   .adminRow .aInfo{flex:1;min-width:0}
   .adminRow .aName{font-weight:700;font-size:13px}
-  .adminRow .aEmail{color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .adminRow .aEmail{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono)}
   .adminRow .aActions{display:flex;gap:6px;flex-shrink:0}
-  .adminRow .aActions button{padding:5px 8px;font-size:11px;background:var(--panel2);color:var(--text)}
-  .adminRow .aActions button.on{background:var(--danger);color:#fff}
+  .adminRow .aActions button{padding:6px 9px;font-size:10.5px;background:var(--panel2);color:var(--text);font-family:var(--font-mono)}
+  .adminRow .aActions button:hover{background:var(--panel3)}
+  .adminRow .aActions button.on{background:var(--danger);color:#1a0a0d}
 
   /* Toasts */
-  #toasts{position:fixed;top:16px;right:16px;z-index:50;display:flex;flex-direction:column;gap:8px}
-  .toast{background:var(--panel3);border:1px solid var(--border);color:var(--text);padding:11px 16px;
-    border-radius:9px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:slideIn .2s ease}
-  .toast.error{border-color:var(--danger)}
-  .toast.success{border-color:var(--success)}
+  #toasts{position:fixed;top:18px;right:18px;z-index:50;display:flex;flex-direction:column;gap:8px}
+  .toast{background:var(--panel3);border:1px solid var(--border);color:var(--text);padding:12px 16px;
+    border-radius:10px;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.45);animation:slideIn .22s cubic-bezier(.2,.9,.25,1);
+    border-left:3px solid var(--accent)}
+  .toast.error{border-left-color:var(--danger)}
+  .toast.success{border-left-color:var(--success)}
   @keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
 
   /* ---------- Responsive ---------- */
@@ -179,6 +224,7 @@
       <div class="roomname" id="roomNameLabel">Chatzy Room</div>
     </div>
     <button class="side" onclick="copyLink()">🔗 Copy invite link</button>
+    <button class="side" id="soundBtn" onclick="toggleSound()">🔊 Sound on</button>
     <button class="side hidden" id="settingsBtnEl" onclick="openSettings()">⚙️ Room settings</button>
     <button class="side" onclick="leaveRoom()">🚪 Leave room</button>
     <h3>Online — <span id="onlineCount">0</span></h3>
@@ -215,6 +261,8 @@
     <div class="field"><label>Join password</label><input id="setPassword"></div>
     <button class="btn-primary" onclick="saveSettings()">Save changes</button>
     <button class="btn-danger" style="width:100%;margin-top:8px" onclick="confirmClearChat()">🗑️ Clear entire chat</button>
+    <button class="btn-ghost" id="ghostBtn" style="width:100%;margin-top:8px" onclick="toggleGhost()">👻 Appear offline (fake)</button>
+    <div class="hint" style="margin-top:8px">Your own typing indicator is always hidden from others. "Appear offline" fakes a leave/join system message and hides you from the online list — you stay fully connected and can still see and send everything.</div>
     <h3 style="margin:18px 0 8px">Users & Emails</h3>
     <div id="adminUserTable" style="max-height:220px;overflow-y:auto"></div>
   </div>
@@ -237,8 +285,42 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-let socket, me = {}, isAdmin = false, pendingImg = null, typingTimeout = null, othersTyping = {};
+let socket, me = {}, isAdmin = false, isGhost = false, pendingImg = null, typingTimeout = null, othersTyping = {};
 let atBottom = true, joining = false, eventsBound = false;
+
+/* ---------- sound engine (synthesized, no audio files needed) ---------- */
+let soundOn = localStorage.getItem('chatzySound') !== 'off';
+let actx = null;
+function ac(){ if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); return actx; }
+function tone(freq, dur, type='sine', gain=0.08, delay=0){
+  if (!soundOn) return;
+  try{
+    const ctx = ac(); const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator(); const g = ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }catch(e){ /* audio not available, fail silently */ }
+}
+const sfx = {
+  sent:      () => tone(720, 0.09, 'sine', 0.06),
+  received:  () => { tone(560, 0.10, 'sine', 0.07); tone(840, 0.11, 'sine', 0.05, 0.05); },
+  join:      () => { tone(520, 0.09, 'triangle', 0.06); tone(780, 0.12, 'triangle', 0.06, 0.08); },
+  leave:     () => { tone(480, 0.12, 'triangle', 0.05); tone(320, 0.16, 'triangle', 0.05, 0.07); },
+  kicked:    () => { tone(300, 0.18, 'sawtooth', 0.06); tone(180, 0.22, 'sawtooth', 0.06, 0.1); },
+};
+function toggleSound(){
+  soundOn = !soundOn;
+  localStorage.setItem('chatzySound', soundOn ? 'on' : 'off');
+  document.getElementById('soundBtn').textContent = soundOn ? '🔊 Sound on' : '🔇 Sound off';
+  if (soundOn) tone(660, 0.08, 'sine', 0.07);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('soundBtn').textContent = soundOn ? '🔊 Sound on' : '🔇 Sound off';
+});
 
 /* ---------- toast helper ---------- */
 function toast(msg, type=''){
@@ -291,13 +373,20 @@ function resetJoinBtn(){
 function bindSocketEvents(){
   if (eventsBound) return; // guard: never attach listeners twice on the same socket
   eventsBound = true;
-  socket.on('message', (m) => renderMsg(m, false));
+  socket.on('message', (m) => {
+    renderMsg(m, false);
+    if (m.type === 'msg') { if (m.from === me.username) sfx.sent(); else sfx.received(); }
+    else if (m.type === 'system') {
+      if (/joined the chat/.test(m.text)) sfx.join();
+      else if (/left the chat/.test(m.text)) sfx.leave();
+    }
+  });
   socket.on('userlist', renderUserList);
   socket.on('adminUserlist', renderAdminUsers);
   socket.on('deleteMsg', (id) => { document.getElementById('m'+id)?.remove(); });
   socket.on('clearChat', () => { document.getElementById('messages').innerHTML = ''; toast('Chat was cleared'); });
   socket.on('settingsUpdated', (s) => { applySettings(s); toast('Room settings updated'); });
-  socket.on('kicked', () => { toast('You were removed from the room.', 'error'); setTimeout(() => location.reload(), 1200); });
+  socket.on('kicked', () => { sfx.kicked(); toast('You were removed from the room.', 'error'); setTimeout(() => location.reload(), 1200); });
   socket.on('typing', (name) => {
     othersTyping[name] = Date.now();
     renderTyping();
@@ -425,13 +514,19 @@ function renderAdminUsers(list){
     const row = document.createElement('div');
     row.className = 'adminRow';
     row.innerHTML = `${avatarHtml(u.username)}
-      <div class="aInfo"><div class="aName">${escapeHtml(u.username)}${u.isAdmin ? ' 👑' : ''}</div><div class="aEmail">${escapeHtml(u.email)}</div></div>
+      <div class="aInfo"><div class="aName">${escapeHtml(u.username)}${u.isAdmin ? ' 👑' : ''}${u.ghost ? ' 👻' : ''}</div><div class="aEmail">${escapeHtml(u.email)}</div></div>
       <div class="aActions">
         <button class="${u.typingOff ? 'on' : ''}" onclick="toggleTyping('${u.username.replace(/'/g,"\\'")}')">${u.typingOff ? 'Typing off' : 'Typing on'}</button>
         ${u.username !== me.username ? `<button onclick="kick('${u.username.replace(/'/g,"\\'")}')">Kick</button>` : ''}
       </div>`;
     box.appendChild(row);
   });
+}
+function toggleGhost(){
+  socket.emit('admin:toggleGhost');
+  isGhost = !isGhost;
+  document.getElementById('ghostBtn').textContent = isGhost ? '👁️ Appear online again' : '👻 Appear offline (fake)';
+  toast(isGhost ? 'You now appear offline to others.' : 'You appear online again.', 'success');
 }
 function toggleTyping(username){ socket.emit('admin:toggleTyping', username); }
 function delMsg(id){ socket.emit('admin:deleteMsg', id); }
