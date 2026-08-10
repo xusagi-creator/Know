@@ -2,704 +2,583 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Freedom — Secure Chat Rooms</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Freedom</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-  :root{--bg:#0a0f0d;--bg2:#111a16;--card:#152019;--card-h:#1a2b22;--brd:#243d30;--brd-l:#2f5240;--fg:#e8f0ec;--fg-m:#8fa89a;--fg-d:#5c7a6a;--acc:#00e68a;--acc-d:#00cc7a;--acc-g:rgba(0,230,138,.15);--dng:#ff4d6a;--dng-g:rgba(255,77,106,.15);--wrn:#ffb347;--wrn-g:rgba(255,179,71,.12)}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
-  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif}
-  .bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 600px 400px at 15% 20%,rgba(0,230,138,.06),transparent),radial-gradient(ellipse 500px 500px at 85% 80%,rgba(0,180,120,.04),transparent)}
-  .view{display:none;position:relative;z-index:1}.view.active{display:flex}
-  .inp{width:100%;background:var(--bg2);border:1px solid var(--brd);color:var(--fg);padding:12px 16px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;transition:border-color .2s,box-shadow .2s;outline:none}
-  .inp::placeholder{color:var(--fg-d)}.inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-g)}
-  .btn-p{background:var(--acc);color:var(--bg);font-weight:600;padding:12px 24px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
-  .btn-p:hover{background:var(--acc-d);transform:translateY(-1px);box-shadow:0 4px 20px var(--acc-g)}.btn-p:active{transform:translateY(0)}
-  .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-  .btn-s{background:var(--card);color:var(--fg);font-weight:500;padding:12px 24px;border-radius:10px;border:1px solid var(--brd);cursor:pointer;font-size:14px;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
-  .btn-s:hover{background:var(--card-h);border-color:var(--brd-l)}
-  .btn-d{background:var(--dng-g);color:var(--dng);font-weight:600;padding:10px 20px;border-radius:10px;border:1px solid rgba(255,77,106,.3);cursor:pointer;font-size:13px;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
-  .btn-d:hover{background:rgba(255,77,106,.25);border-color:var(--dng)}
-  .btn-sm{padding:8px 14px;font-size:12px;border-radius:8px}
-  .btn-i{background:transparent;border:1px solid var(--brd);color:var(--fg-m);width:38px;height:38px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-  .btn-i:hover{background:var(--card);color:var(--fg);border-color:var(--brd-l)}
-  .room-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:20px;transition:all .25s;cursor:pointer}
-  .room-card:hover{border-color:var(--acc);background:var(--card-h);box-shadow:0 0 30px var(--acc-g);transform:translateY(-2px)}
-  .chat-c{display:flex;flex-direction:column;height:100vh;max-height:100vh}
-  .chat-h{background:var(--bg2);border-bottom:1px solid var(--brd);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-  .chat-m{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth}
-  .chat-m::-webkit-scrollbar{width:6px}.chat-m::-webkit-scrollbar-track{background:transparent}.chat-m::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
-  .mb{max-width:75%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5;word-wrap:break-word;animation:mi .25s ease-out}
-  .mb.other{background:var(--card);border:1px solid var(--brd);align-self:flex-start;border-bottom-left-radius:4px}
-  .mb.self{background:linear-gradient(135deg,rgba(0,230,138,.18),rgba(0,180,120,.12));border:1px solid rgba(0,230,138,.25);align-self:flex-end;border-bottom-right-radius:4px}
-  .mb.sys{background:transparent;color:var(--fg-d);font-size:12px;text-align:center;align-self:center;padding:4px 12px;max-width:90%}
-  .mb img{max-width:280px;max-height:280px;border-radius:10px;margin-top:6px;display:block}
-  .mb-a{font-size:11px;font-weight:600;color:var(--acc);margin-bottom:3px;font-family:'Space Grotesk',sans-serif}
-  .mb-t{font-size:10px;color:var(--fg-d);margin-top:4px;text-align:right}
-  .chat-ia{background:var(--bg2);border-top:1px solid var(--brd);padding:16px 24px;flex-shrink:0}
-  .chat-iw{display:flex;gap:10px;align-items:flex-end}
-  .chat-inp{flex:1;background:var(--card);border:1px solid var(--brd);color:var(--fg);padding:12px 16px;border-radius:12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;resize:none;max-height:120px;line-height:1.4;transition:border-color .2s}
-  .chat-inp::placeholder{color:var(--fg-d)}.chat-inp:focus{border-color:var(--acc)}
-  .typ-ind{font-size:12px;color:var(--fg-d);padding:0 4px;height:18px;display:flex;align-items:center;gap:4px}
-  .typ-dot{width:4px;height:4px;background:var(--fg-d);border-radius:50%;animation:tb 1.2s infinite}
-  .typ-dot:nth-child(2){animation-delay:.2s}.typ-dot:nth-child(3){animation-delay:.4s}
-  .sidebar{width:280px;background:var(--bg2);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:transform .3s}
-  .sidebar-h{padding:16px 20px;border-bottom:1px solid var(--brd)}.sidebar-b{flex:1;overflow-y:auto;padding:12px}
-  .sidebar-b::-webkit-scrollbar{width:4px}.sidebar-b::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
-  .u-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background .15s}
-  .u-item:hover{background:var(--card)}
-  .u-av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;font-family:'Space Grotesk',sans-serif;flex-shrink:0;color:#fff}
-  .mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-  .mo.open{display:flex}
-  .modal{background:var(--bg2);border:1px solid var(--brd);border-radius:18px;padding:28px;width:90%;max-width:440px;animation:moIn .25s ease-out}
-  .toast-c{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
-  .toast{background:var(--card);border:1px solid var(--brd);color:var(--fg);padding:12px 18px;border-radius:12px;font-size:13px;animation:tIn .3s ease-out;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px}
-  .toast.error{border-color:var(--dng);color:var(--dng)}.toast.success{border-color:var(--acc);color:var(--acc)}
-  .pw-w{position:relative}.pw-t{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--fg-d);cursor:pointer;font-size:14px}
-  .img-prev{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border-radius:10px;border:1px solid var(--brd);margin-bottom:8px}
-  .img-prev img{height:50px;border-radius:6px}.img-prev button{background:none;border:none;color:var(--dng);cursor:pointer;font-size:16px}
-  .online-dot{width:8px;height:8px;background:var(--acc);border-radius:50%;animation:pu 2s infinite}
-  .chk-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px 14px;background:var(--card);border:1px solid var(--brd);border-radius:10px;transition:all .2s;user-select:none}
-  .chk-row:hover{border-color:var(--brd-l);background:var(--card-h)}
-  .chk-row input{display:none}
-  .chk-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--brd-l);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;margin-top:1px}
-  .chk-row input:checked~.chk-box{background:var(--acc);border-color:var(--acc)}
-  .chk-box i{font-size:10px;color:var(--bg);opacity:0;transition:opacity .15s}.chk-row input:checked~.chk-box i{opacity:1}
-  .room-code{font-family:'Space Grotesk',monospace;font-weight:700;letter-spacing:3px;font-size:13px;color:var(--acc);background:var(--bg);border:1px solid var(--brd);padding:3px 10px;border-radius:8px;cursor:pointer;transition:all .2s}
-  .room-code:hover{border-color:var(--acc);box-shadow:0 0 12px var(--acc-g)}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f0e;--bg2:#121917;--bg3:#1a2320;
+  --brd:#1f3029;--brd2:#2a4038;
+  --fg:#e4ede8;--fg2:#94aaa0;--fg3:#5a7168;
+  --green:#22c55e;--green2:#16a34a;--greenBg:rgba(34,197,94,.1);
+  --red:#ef4444;--redBg:rgba(239,68,68,.1);
+  --amber:#f59e0b;--amberBg:rgba(245,158,11,.1);
+  --blue:#3b82f6;--blueBg:rgba(59,130,246,.1);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);height:100vh;height:100dvh;overflow:hidden}
+.view{display:none;height:100%;height:100dvh}.view.on{display:flex}
 
-  /* Allow page */
-  .allow-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .allow-card{background:var(--card);border:1px solid var(--brd);border-radius:20px;padding:44px 36px;max-width:440px;width:100%;text-align:center}
-  .allow-icon{width:64px;height:64px;border-radius:18px;background:var(--acc-g);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-  .allow-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 12px;border-radius:8px;margin:3px}
-  .allow-btn{width:100%;padding:16px;font-size:16px;border-radius:14px;justify-content:center;margin-top:8px}
+/* Inputs */
+.ipt{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--fg);padding:11px 14px;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+.ipt::placeholder{color:var(--fg3)}.ipt:focus{border-color:var(--green)}
 
-  /* Loading overlay for silent capture */
-  .cap-overlay{position:fixed;inset:0;z-index:90;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
-  .cap-overlay.show{display:flex}
-  .cap-spinner{width:48px;height:48px;border:3px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes moIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  @keyframes tIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
-  @keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
-  @keyframes fi{from{opacity:0}to{opacity:1}}
-  @keyframes pu{0%,100%{opacity:1}50%{opacity:.4}}
-  @media(max-width:768px){.sidebar{position:fixed;right:0;top:0;bottom:0;z-index:50;transform:translateX(100%)}.sidebar.open{transform:translateX(0)}.mb{max-width:88%}}
+/* Buttons */
+.bp{background:var(--green);color:#000;font-weight:600;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.bp:hover{background:var(--green2)}.bp:active{transform:scale(.97)}.bp:disabled{opacity:.4;cursor:default;transform:none}
+.bs{background:var(--bg3);color:var(--fg);font-weight:500;padding:11px 20px;border-radius:10px;border:1px solid var(--brd);cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.bs:hover{background:var(--brd2)}.bd{background:var(--redBg);color:var(--red);font-weight:600;padding:9px 16px;border-radius:9px;border:1px solid rgba(239,68,68,.2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.bd:hover{background:rgba(239,68,68,.18)}
+.bi{background:none;border:none;color:var(--fg3);width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.bi:hover{background:var(--bg3);color:var(--fg)}
+
+/* Scrollbar */
+.scr::-webkit-scrollbar{width:5px}.scr::-webkit-scrollbar-track{background:transparent}.scr::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+
+/* LOBBY */
+.lobby{flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.lobby-in{width:100%;max-width:560px}
+.room-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;cursor:pointer;transition:all .15s}
+.room-row:hover{border-color:var(--brd2);background:var(--bg3)}
+.rcode{font-family:'Inter',monospace;font-weight:700;letter-spacing:2px;font-size:12px;color:var(--green);background:var(--greenBg);padding:3px 8px;border-radius:6px;cursor:pointer}
+.rcode:hover{background:rgba(34,197,94,.18)}
+
+/* ALLOW PAGE */
+.allow{flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.allow-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:40px 32px;max-width:400px;width:100%;text-align:center}
+.abdg{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px}
+
+/* CHAT */
+.chat{flex-direction:column;height:100%;height:100dvh}
+.chdr{background:var(--bg2);border-bottom:1px solid var(--brd);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cbody{flex:1;display:flex;overflow:hidden}
+.cmsgs{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:2px}
+.cinp{background:var(--bg2);border-top:1px solid var(--brd);padding:10px 12px;flex-shrink:0}
+
+/* Messages */
+.msg{max-width:72%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-wrap:break-word;position:relative}
+.msg.o{background:var(--bg3);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.s{background:var(--greenBg);border:1px solid rgba(34,197,94,.15);align-self:flex-end;border-bottom-right-radius:4px}
+.msg.sy{background:none;color:var(--fg3);font-size:12px;align-self:center;padding:4px 0;max-width:90%}
+.msg img{max-width:260px;max-height:260px;border-radius:10px;margin-top:6px;display:block}
+.msg-n{font-size:11px;font-weight:600;color:var(--green);margin-bottom:2px}
+.msg-t{font-size:10px;color:var(--fg3);margin-top:3px;text-align:right}
+.msg-deleted{opacity:.2;text-decoration:line-through;pointer-events:none}
+
+/* Typing */
+.typ{font-size:12px;color:var(--fg3);padding:2px 16px 6px;height:20px;display:flex;align-items:center;gap:5px}
+.typ-d{width:4px;height:4px;background:var(--fg3);border-radius:50%;animation:tb 1.4s infinite}
+.typ-d:nth-child(2){animation-delay:.15s}.typ-d:nth-child(3){animation-delay:.3s}
+
+/* Input bar */
+.inp-bar{display:flex;align-items:flex-end;gap:6px}
+.inp-bar textarea{flex:1;background:var(--bg);border:1px solid var(--brd);color:var(--fg);padding:10px 14px;border-radius:20px;font-size:14px;font-family:inherit;outline:none;resize:none;max-height:100px;line-height:1.4;transition:border .2s}
+.inp-bar textarea::placeholder{color:var(--fg3)}
+.inp-bar textarea:focus{border-color:var(--green)}
+.send-btn{width:38px;height:38px;border-radius:50%;background:var(--green);border:none;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;opacity:0;transform:scale(.7);pointer-events:none}
+.send-btn.vis{opacity:1;transform:scale(1);pointer-events:auto}
+.send-btn:hover{background:var(--green2)}.send-btn:active{transform:scale(.9)}
+
+/* Sidebar */
+.sb{width:260px;background:var(--bg2);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
+.sb-h{padding:14px 16px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:600;color:var(--fg2)}
+.sb-b{flex:1;overflow-y:auto;padding:8px}
+.ub{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;transition:background .12s}
+.ub:hover{background:var(--bg3)}
+.uav{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#fff}
+
+/* Modal */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.mov.on{display:flex}
+.mdl{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:24px;width:92%;max-width:420px;animation:mIn .2s ease-out}
+.mdl-lg{max-width:500px}
+
+/* Toast */
+.tc{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.tst{background:var(--bg3);border:1px solid var(--brd);color:var(--fg);padding:10px 16px;border-radius:10px;font-size:13px;animation:tIn .25s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px}
+.tst.e{border-color:rgba(239,68,68,.3);color:var(--red)}.tst.s{border-color:rgba(34,197,94,.3);color:var(--green)}
+
+/* Checkbox */
+.ckr{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:11px 13px;background:var(--bg);border:1px solid var(--brd);border-radius:10px;transition:all .15s;user-select:none}
+.ckr:hover{border-color:var(--brd2)}.ckr input{display:none}
+.ckb{width:18px;height:18px;border-radius:5px;border:2px solid var(--brd2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;margin-top:1px}
+.ckr input:checked~.ckb{background:var(--green);border-color:var(--green)}
+.ckb i{font-size:9px;color:#000;opacity:0;transition:opacity .1s}.ckr input:checked~.ckb i{opacity:1}
+
+/* Pw toggle */
+.pww{position:relative}.pwt{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--fg3);cursor:pointer;font-size:13px}
+
+/* Img preview */
+.imp{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:10px;margin-bottom:6px}
+.imp img{height:40px;border-radius:6px}
+
+/* Capture overlay (invisible) */
+#capOv{position:fixed;inset:0;z-index:90;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#capOv.on{display:flex}
+.cspin{width:36px;height:36px;border:3px solid var(--brd);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:none}}
+@keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+
+@media(max-width:640px){
+  .sb{position:fixed;right:0;top:0;bottom:0;z-index:50;transform:translateX(100%);transition:transform .25s}
+  .sb.on{transform:translateX(0)}
+  .msg{max-width:85%}
+  .lobby-in{max-width:100%}
+}
 </style>
 </head>
 <body>
-<div class="bg-glow"></div>
-<div class="toast-c" id="toasts"></div>
 
-<!-- Silent capture loading overlay -->
-<div class="cap-overlay" id="cap-ov">
-  <div class="cap-spinner"></div>
-  <p class="text-sm" style="color:var(--fg-m)">Verifying identity...</p>
-</div>
+<div class="tc" id="tc"></div>
+<div id="capOv"><div class="cspin"></div><p style="color:var(--fg2);font-size:13px">Verifying...</p></div>
 
-<!-- ═══════════ LOBBY ═══════════ -->
-<div id="v-lobby" class="view active flex-col items-center justify-center min-h-screen p-6" style="animation:fi .5s ease-out">
-  <div class="w-full max-w-2xl mx-auto">
-    <div class="text-center mb-10">
-      <div class="inline-flex items-center gap-3 mb-4">
-        <div style="width:44px;height:44px;background:var(--acc);border-radius:12px;display:flex;align-items:center;justify-content:center">
-          <i class="fa-solid fa-comments" style="color:var(--bg);font-size:20px"></i>
+<!-- ═══════ LOBBY ═══════ -->
+<div id="vL" class="view on lobby" style="animation:fi .4s">
+  <div class="lobby-in">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:38px;height:38px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center">
+          <i class="fa-solid fa-comments" style="color:#000;font-size:16px"></i>
         </div>
-        <h1 class="text-3xl font-bold tracking-tight">Freedom</h1>
+        <h1 style="font-size:24px;font-weight:700;letter-spacing:-.5px">Freedom</h1>
       </div>
-      <p style="color:var(--fg-m);font-size:15px">Create a room, share the link, close it when you're done. No accounts, no traces.</p>
+      <p style="color:var(--fg2);font-size:13px">Create a room, share the link, close it when done.</p>
     </div>
-    <div class="flex gap-3 mb-8 justify-center flex-wrap">
-      <button class="btn-p" onclick="openMo('create')"><i class="fa-solid fa-plus"></i> Create a Room</button>
-      <button class="btn-s" onclick="openMo('join')"><i class="fa-solid fa-arrow-right-to-bracket"></i> Join a Room</button>
+    <div style="display:flex;gap:8px;margin-bottom:28px">
+      <button class="bp" style="flex:1;justify-content:center" onclick="oM('cr')"><i class="fa-solid fa-plus" style="font-size:12px"></i> Create Room</button>
+      <button class="bs" style="flex:1;justify-content:center" onclick="oM('jn')"><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:12px"></i> Join Room</button>
     </div>
-    <div>
-      <div class="flex items-center gap-2 mb-4">
-        <h3 class="text-sm font-semibold" style="color:var(--fg-m);text-transform:uppercase;letter-spacing:1px">Active Rooms</h3>
-        <div id="room-cnt" class="text-xs px-2 py-0.5 rounded-full" style="background:var(--card);color:var(--fg-d);border:1px solid var(--brd)">0</div>
-      </div>
-      <div id="room-list" class="flex flex-col gap-3">
-        <div class="text-center py-10" style="color:var(--fg-d);font-size:13px">
-          <i class="fa-regular fa-comments" style="font-size:28px;display:block;margin-bottom:10px;opacity:.4"></i>
-          No active rooms yet. Create one to get started.
-        </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:11px;font-weight:600;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px">Active Rooms</span>
+      <span id="rCnt" style="font-size:11px;color:var(--fg3);background:var(--bg3);padding:1px 7px;border-radius:5px">0</span>
+    </div>
+    <div id="rList" style="display:flex;flex-direction:column;gap:6px">
+      <div style="text-align:center;padding:40px 0;color:var(--fg3);font-size:13px">
+        <i class="fa-regular fa-comments" style="font-size:24px;display:block;margin-bottom:8px;opacity:.35"></i>
+        No active rooms
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ ALLOW PAGE ═══════════ -->
-<div id="v-allow" class="view allow-page" style="animation:fi .4s ease-out">
+<!-- ═══════ ALLOW ═══════ -->
+<div id="vA" class="view allow" style="animation:fi .3s">
   <div class="allow-card">
-    <div class="allow-icon"><i class="fa-solid fa-door-open" style="font-size:26px;color:var(--acc)"></i></div>
-    <p class="text-sm mb-1" style="color:var(--fg-d)">You're invited to join</p>
-    <h2 id="allow-name" class="text-2xl font-bold mb-4">Room Name</h2>
-    <div id="allow-badges" class="flex flex-wrap justify-center gap-1 mb-5"></div>
-    <div id="allow-reqs" class="text-left mb-6" style="font-size:13px;color:var(--fg-m)"></div>
-    <button id="allow-btn" class="btn-p allow-btn" onclick="handleAllow()">
+    <div style="width:52px;height:52px;background:var(--greenBg);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="fa-solid fa-door-open" style="font-size:20px;color:var(--green)"></i>
+    </div>
+    <p style="font-size:13px;color:var(--fg3);margin-bottom:2px">You're invited to join</p>
+    <h2 id="aName" style="font-size:20px;font-weight:700;margin-bottom:14px">Room</h2>
+    <div id="aBdg" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:16px"></div>
+    <div id="aReq" style="text-align:left;margin-bottom:20px;font-size:12px;color:var(--fg2)"></div>
+    <button id="aBtn" class="bp" style="width:100%;justify-content:center;padding:13px;font-size:15px" onclick="handleAllow()">
       <i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join
     </button>
-    <button class="btn-s w-full justify-center mt-3" onclick="goLobby()"><i class="fa-solid fa-house"></i> Back to Lobby</button>
-    <div id="allow-err" class="mt-4" style="display:none">
-      <div style="background:var(--dng-g);border:1px solid rgba(255,77,106,.3);border-radius:10px;padding:14px;color:var(--dng);font-size:13px">
-        <i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i><span id="allow-err-txt"></span>
+    <button class="bs" style="width:100%;justify-content:center;margin-top:8px" onclick="goL()"><i class="fa-solid fa-house" style="font-size:12px"></i> Back to Lobby</button>
+    <div id="aErr" style="display:none;margin-top:14px">
+      <div style="background:var(--redBg);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:12px;color:var(--red);font-size:12px">
+        <i class="fa-solid fa-circle-exclamation" style="margin-right:5px"></i><span id="aErrT"></span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CHAT ═══════════ -->
-<div id="v-chat" class="view chat-c">
-  <div class="chat-h">
-    <div class="flex items-center gap-3">
-      <button class="btn-i" onclick="leaveRoom()" title="Leave room"><i class="fa-solid fa-arrow-left" style="font-size:13px"></i></button>
-      <div>
-        <div class="flex items-center gap-2">
-          <h2 id="chat-rn" class="text-sm font-bold">Room</h2>
-          <span id="chat-rc" class="room-code" onclick="copyCode()" title="Click to copy room code"></span>
-        </div>
-        <div class="flex items-center gap-2 mt-0.5">
-          <div class="online-dot"></div>
-          <span id="chat-mc" class="text-xs" style="color:var(--fg-m)">0 members</span>
-        </div>
+<!-- ═══════ CHAT ═══════ -->
+<div id="vC" class="view chat">
+  <div class="chdr">
+    <button class="bi" onclick="leaveR()" title="Leave"><i class="fa-solid fa-arrow-left" style="font-size:13px"></i></button>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="cRn" style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Room</span>
+        <span id="cRc" class="rcode" onclick="cpTxt(curR)" title="Copy code"></span>
       </div>
+      <span id="cMc" style="font-size:11px;color:var(--fg3)">0 members</span>
     </div>
-    <div class="flex items-center gap-2">
-      <button id="btn-share" class="btn-i" onclick="shareLink()" title="Copy invite link"><i class="fa-solid fa-link" style="font-size:13px"></i></button>
-      <button id="btn-adm" class="btn-i" onclick="openMo('admin')" title="Admin panel" style="display:none"><i class="fa-solid fa-shield-halved" style="font-size:13px"></i></button>
-      <button class="btn-i" onclick="toggleSidebar()" title="Members"><i class="fa-solid fa-users" style="font-size:13px"></i></button>
+    <button class="bi" onclick="cpTxt(rLink(curR))" title="Copy invite link"><i class="fa-solid fa-link" style="font-size:12px"></i></button>
+    <button id="bAdm" class="bi" onclick="oM('ad')" title="Admin" style="display:none"><i class="fa-solid fa-shield-halved" style="font-size:12px"></i></button>
+    <button class="bi" onclick="$('sb').classList.toggle('on')" title="Members"><i class="fa-solid fa-users" style="font-size:12px"></i></button>
+  </div>
+  <div class="cbody">
+    <div class="cmsgs scr" id="cMsgs"></div>
+    <div class="sb scr" id="sb">
+      <div class="sb-h">Members</div>
+      <div class="sb-b" id="sbU"></div>
     </div>
   </div>
-  <div class="flex flex-1 overflow-hidden">
-    <div class="flex-1 flex flex-col">
-      <div class="chat-m" id="chat-msgs"></div>
-      <div class="chat-ia">
-        <div id="img-prev-a"></div>
-        <div class="typ-ind" id="typ-ind"></div>
-        <div class="chat-iw">
-          <button class="btn-i" onclick="trigImg()" title="Attach image" style="flex-shrink:0"><i class="fa-solid fa-image" style="font-size:14px"></i></button>
-          <input type="file" id="img-up" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none">
-          <textarea id="chat-inp" class="chat-inp" rows="1" placeholder="Type your message..."></textarea>
-          <button class="btn-p btn-sm" onclick="sendMsg()" style="flex-shrink:0"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-      </div>
-    </div>
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-h"><h3 class="text-sm font-bold">Members</h3></div>
-      <div class="sidebar-b" id="sb-users"></div>
+  <div class="cinp">
+    <div id="iPrev"></div>
+    <div class="typ" id="typI"></div>
+    <div class="inp-bar">
+      <button class="bi" onclick="$('fUp').click()" title="Attach image"><i class="fa-solid fa-image" style="font-size:14px"></i></button>
+      <input type="file" id="fUp" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none">
+      <textarea id="cInp" rows="1" placeholder="Message..."></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendM()"><i class="fa-solid fa-paper-plane" style="font-size:13px"></i></button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ MODALS ═══════════ -->
+<!-- ═══════ MODALS ═══════ -->
 
 <!-- Create -->
-<div class="mo" id="mo-create">
-  <div class="modal" style="max-width:460px">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-lg font-bold">Create a Room</h3>
-      <button class="btn-i" onclick="closeMo('create')" style="width:32px;height:32px"><i class="fa-solid fa-xmark" style="font-size:12px"></i></button>
+<div class="mov" id="mCr">
+  <div class="mdl">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700">Create a Room</h3>
+      <button class="bi" onclick="cM('cr')" style="width:30px;height:30px"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
     </div>
-    <div class="flex flex-col gap-4">
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Room Name</label><input id="cr-rn" class="inp" placeholder="e.g. Sprint Planning — Q4" maxlength="50"></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Your Display Name</label><input id="cr-un" class="inp" placeholder="e.g. Alex Morgan" maxlength="24"></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Email Address</label><input id="cr-em" class="inp" type="email" placeholder="you@company.com" maxlength="80"></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Admin Password</label><div class="pw-w"><input id="cr-ap" class="inp" type="password" placeholder="To manage the room later"><button class="pw-t" onclick="togPw('cr-ap',this)"><i class="fa-regular fa-eye"></i></button></div></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Room Password <span style="color:var(--fg-d);font-weight:400">(optional)</span></label><div class="pw-w"><input id="cr-rp" class="inp" type="password" placeholder="Leave empty for open access"><button class="pw-t" onclick="togPw('cr-rp',this)"><i class="fa-regular fa-eye"></i></button></div></div>
-      <label class="chk-row">
-        <input type="checkbox" id="cr-photo">
-        <div class="chk-box"><i class="fa-solid fa-check"></i></div>
-        <div>
-          <div class="text-sm font-medium">Require Participant Photo</div>
-          <div class="text-xs" style="color:var(--fg-d)">Participants must verify their identity via front camera. Photo is sent to the host via Telegram.</div>
-        </div>
-      </label>
-      <button class="btn-p w-full justify-center mt-2" onclick="createRoom()"><i class="fa-solid fa-rocket"></i> Create Room</button>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM NAME</label><input id="crN" class="ipt" placeholder="e.g. Sprint Planning" maxlength="50"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">YOUR NAME</label><input id="crU" class="ipt" placeholder="e.g. Alex Morgan" maxlength="24"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">EMAIL</label><input id="crE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ADMIN PASSWORD</label><div class="pww"><input id="crA" class="ipt" type="password" placeholder="To manage this room"><button class="pwt" onclick="tpw('crA',this)"><i class="fa-regular fa-eye"></i></button></div></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM PASSWORD <span style="font-weight:400">(optional)</span></label><div class="pww"><input id="crP" class="ipt" type="password" placeholder="Leave empty for open access"><button class="pwt" onclick="tpw('crP',this)"><i class="fa-regular fa-eye"></i></button></div></div>
+      <label class="ckr"><input type="checkbox" id="crPh"><div class="ckb"><i class="fa-solid fa-check"></i></div><div><div style="font-size:13px;font-weight:500">Require Participant Photo</div><div style="font-size:11px;color:var(--fg3);margin-top:2px">Captures silently from front camera and sends to host via Telegram</div></div></label>
+      <button class="bp" style="width:100%;justify-content:center;margin-top:4px" onclick="crRoom()"><i class="fa-solid fa-plus" style="font-size:12px"></i> Create Room</button>
     </div>
   </div>
 </div>
 
 <!-- Join -->
-<div class="mo" id="mo-join">
-  <div class="modal">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-lg font-bold">Join a Room</h3>
-      <button class="btn-i" onclick="closeMo('join')" style="width:32px;height:32px"><i class="fa-solid fa-xmark" style="font-size:12px"></i></button>
+<div class="mov" id="mJn">
+  <div class="mdl">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700">Join a Room</h3>
+      <button class="bi" onclick="cM('jn')" style="width:30px;height:30px"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
     </div>
-    <div class="flex flex-col gap-4">
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Room Code</label><input id="jr-rid" class="inp" placeholder="e.g. A3F2B1" style="font-family:'Space Grotesk',monospace;letter-spacing:2px;text-transform:uppercase"></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Your Display Name</label><input id="jr-un" class="inp" placeholder="e.g. Jordan Lee" maxlength="24"></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Email Address</label><input id="jr-em" class="inp" type="email" placeholder="you@company.com" maxlength="80"></div>
-      <div><label class="block text-xs font-semibold mb-2" style="color:var(--fg-m)">Room Password <span style="color:var(--fg-d);font-weight:400">(if required)</span></label><input id="jr-pw" class="inp" type="password" placeholder="Enter room password"></div>
-      <div class="flex gap-2 mt-1">
-        <button class="btn-s flex-1 justify-center" onclick="closeMo('join')">Cancel</button>
-        <button class="btn-p flex-1 justify-center" onclick="doJoinFlow()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Join</button>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM CODE</label><input id="jnR" class="ipt" placeholder="e.g. A3F2B1" style="font-family:monospace;letter-spacing:2px;text-transform:uppercase"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">YOUR NAME</label><input id="jnU" class="ipt" placeholder="e.g. Jordan Lee" maxlength="24"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">EMAIL</label><input id="jnE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM PASSWORD <span style="font-weight:400">(if required)</span></label><input id="jnP" class="ipt" type="password" placeholder="Enter password"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="bs" style="flex:1;justify-content:center" onclick="cM('jn')">Cancel</button>
+        <button class="bp" style="flex:1;justify-content:center" onclick="doJoin()"><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:12px"></i> Join</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Admin -->
-<div class="mo" id="mo-admin">
-  <div class="modal" style="max-width:520px">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-lg font-bold"><i class="fa-solid fa-shield-halved" style="color:var(--acc);margin-right:6px"></i> Room Administration</h3>
-      <button class="btn-i" onclick="closeMo('admin')" style="width:32px;height:32px"><i class="fa-solid fa-xmark" style="font-size:12px"></i></button>
+<div class="mov" id="mAd">
+  <div class="mdl mdl-lg">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700"><i class="fa-solid fa-shield-halved" style="color:var(--green);margin-right:6px;font-size:14px"></i>Administration</h3>
+      <button class="bi" onclick="cM('ad')" style="width:30px;height:30px"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
     </div>
-    <div class="mb-6">
-      <h4 class="text-xs font-semibold mb-3" style="color:var(--fg-m);text-transform:uppercase;letter-spacing:1px">Invite Link</h4>
-      <div class="flex gap-2">
-        <input id="adm-link" class="inp" readonly style="font-size:12px;font-family:monospace">
-        <button class="btn-p btn-sm" onclick="copyInviteLink()" style="flex-shrink:0"><i class="fa-solid fa-copy"></i></button>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">INVITE LINK</label>
+      <div style="display:flex;gap:6px"><input id="adLnk" class="ipt" readonly style="font-size:11px;font-family:monospace"><button class="bp" style="padding:8px 14px;font-size:12px;flex-shrink:0" onclick="cpTxt(rLink(curR))"><i class="fa-solid fa-copy"></i></button></div>
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:8px">SETTINGS</label>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><label style="display:block;font-size:11px;color:var(--fg3);margin-bottom:4px">Room Name</label><input id="adN" class="ipt" maxlength="50"></div>
+        <div><label style="display:block;font-size:11px;color:var(--fg3);margin-bottom:4px">Room Password</label><input id="adP" class="ipt" placeholder="None"></div>
+        <button class="bp" style="padding:8px 14px;font-size:12px;align-self:flex-start" onclick="updSet()"><i class="fa-solid fa-check" style="font-size:10px"></i> Save</button>
       </div>
     </div>
-    <div class="mb-6">
-      <h4 class="text-xs font-semibold mb-3" style="color:var(--fg-m);text-transform:uppercase;letter-spacing:1px">Settings</h4>
-      <div class="flex flex-col gap-3">
-        <div><label class="block text-xs mb-1" style="color:var(--fg-d)">Room Name</label><input id="adm-rn" class="inp" maxlength="50"></div>
-        <div><label class="block text-xs mb-1" style="color:var(--fg-d)">Room Password</label><input id="adm-rp" class="inp" type="text" placeholder="None"></div>
-        <button class="btn-p btn-sm" onclick="updateSettings()"><i class="fa-solid fa-check"></i> Save Settings</button>
-      </div>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:8px">USERS</label>
+      <div id="adUl" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto" class="scr"></div>
     </div>
-    <div class="mb-6">
-      <h4 class="text-xs font-semibold mb-3" style="color:var(--fg-m);text-transform:uppercase;letter-spacing:1px">Users</h4>
-      <div id="adm-ul" class="flex flex-col gap-2 max-h-48 overflow-y-auto" style="scrollbar-width:thin"></div>
-    </div>
-    <div class="flex flex-col gap-2">
-      <button class="btn-d btn-sm justify-center" onclick="clearChat()"><i class="fa-solid fa-trash-can"></i> Clear Conversation</button>
-      <button class="btn-d btn-sm justify-center" onclick="toggleGhost()"><i class="fa-solid fa-ghost"></i> <span id="ghost-txt">Enter Invisible Mode</span></button>
-      <button class="btn-d btn-sm justify-center" style="border-color:var(--dng);background:rgba(255,77,106,.2)" onclick="closeRoom()"><i class="fa-solid fa-power-off"></i> Close and Delete Room</button>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="bd" style="justify-content:center" onclick="clrChat()"><i class="fa-solid fa-trash-can" style="font-size:11px"></i> Clear Chat</button>
+      <button class="bd" style="justify-content:center" onclick="togGhost()"><i class="fa-solid fa-ghost" style="font-size:11px"></i> <span id="ghTxt">Go Invisible</span></button>
+      <button class="bd" style="justify-content:center;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.15)" onclick="clsRoom()"><i class="fa-solid fa-power-off" style="font-size:11px"></i> Close Room</button>
     </div>
   </div>
 </div>
 
 <!-- Confirm -->
-<div class="mo" id="mo-confirm">
-  <div class="modal" style="text-align:center;max-width:360px">
-    <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:var(--wrn);margin-bottom:12px;display:block"></i>
-    <p id="cfm-txt" class="text-sm mb-6" style="color:var(--fg-m)"></p>
-    <div class="flex gap-2">
-      <button class="btn-s flex-1 justify-center" onclick="cfmNo()">Cancel</button>
-      <button class="btn-d flex-1 justify-center" id="cfm-yes">Confirm</button>
+<div class="mov" id="mCf">
+  <div class="mdl" style="text-align:center;max-width:340px">
+    <i class="fa-solid fa-triangle-exclamation" style="font-size:28px;color:var(--amber);margin-bottom:10px;display:block"></i>
+    <p id="cfT" style="font-size:13px;color:var(--fg2);margin-bottom:20px"></p>
+    <div style="display:flex;gap:8px">
+      <button class="bs" style="flex:1;justify-content:center" onclick="cfN()">Cancel</button>
+      <button class="bd" style="flex:1;justify-content:center" id="cfY">Confirm</button>
     </div>
   </div>
 </div>
 
 <!-- Kicked -->
-<div class="mo" id="mo-kicked" style="z-index:150">
-  <div class="modal" style="text-align:center">
-    <i class="fa-solid fa-ban" style="font-size:40px;color:var(--dng);margin-bottom:16px;display:block"></i>
-    <h3 class="text-lg font-bold mb-2">Removed from Room</h3>
-    <p class="text-sm mb-6" style="color:var(--fg-m)">You have been removed from this room by the host.</p>
-    <button class="btn-p" onclick="goLobby()"><i class="fa-solid fa-house"></i> Return to Lobby</button>
+<div class="mov" id="mKk">
+  <div class="mdl" style="text-align:center">
+    <i class="fa-solid fa-ban" style="font-size:36px;color:var(--red);margin-bottom:12px;display:block"></i>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">Removed</h3>
+    <p style="font-size:13px;color:var(--fg2);margin-bottom:20px">You were removed from this room by the host.</p>
+    <button class="bp" onclick="goL()"><i class="fa-solid fa-house" style="font-size:12px"></i> Return to Lobby</button>
   </div>
 </div>
 
-<!-- Room Closed -->
-<div class="mo" id="mo-closed" style="z-index:150">
-  <div class="modal" style="text-align:center">
-    <i class="fa-solid fa-door-closed" style="font-size:40px;color:var(--wrn);margin-bottom:16px;display:block"></i>
-    <h3 class="text-lg font-bold mb-2">Room Closed</h3>
-    <p id="closed-rn" class="text-sm mb-6" style="color:var(--fg-m)">This room has been permanently closed by the host.</p>
-    <button class="btn-p" onclick="goLobby()"><i class="fa-solid fa-house"></i> Return to Lobby</button>
+<!-- Closed -->
+<div class="mov" id="mCl">
+  <div class="mdl" style="text-align:center">
+    <i class="fa-solid fa-door-closed" style="font-size:36px;color:var(--amber);margin-bottom:12px;display:block"></i>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">Room Closed</h3>
+    <p id="clN" style="font-size:13px;color:var(--fg2);margin-bottom:20px">This room has been closed.</p>
+    <button class="bp" onclick="goL()"><i class="fa-solid fa-house" style="font-size:12px"></i> Return to Lobby</button>
   </div>
 </div>
 
 <script>
-const socket = io();
-let curRoom = null, myUser = null, myEmail = null, isAdm = false, isGhost = false;
-let pendImg = null, capturedPhoto = null, pendJoinRoom = null, pendJoin = null;
-let typTO = null, lastTypEmit = 0;
-let knownRooms = {};
-try { Object.assign(knownRooms, JSON.parse(localStorage.getItem('fr_rooms') || '{}')); } catch(e) {}
-let allowRoomInfo = null;
+const S=io();
+let curR=null,myU=null,myE=null,isAd=false,isGh=false;
+let pImg=null,capPh=null,pRid=null,pJn=null;
+let typTO=null,lastTE=0;
+let kR={};try{Object.assign(kR,JSON.parse(localStorage.getItem('fr_r')||'{}'));}catch(e){}
+let aInfo=null;
 
-const $ = id => document.getElementById(id);
-function showV(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); $(id).classList.add('active'); }
-function toast(msg, t='info') {
-  const el = document.createElement('div'); el.className = 'toast ' + t;
-  el.innerHTML = `<i class="fa-solid ${t==='error'?'fa-circle-exclamation':t==='success'?'fa-circle-check':'fa-circle-info'}"></i> ${esc(msg)}`;
-  $('toasts').appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 3500);
-}
-function openMo(n) { $('mo-'+n).classList.add('open'); }
-function closeMo(n) { $('mo-'+n).classList.remove('open'); }
-function togPw(id,btn) { const i=$(id); const h=i.type==='password'; i.type=h?'text':'password'; btn.innerHTML=`<i class="fa-regular fa-eye${h?'-slash':''}"></i>`; }
-function fmtTime(ts) { return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
-function avColor(n) { let h=0; for(let i=0;i<n.length;i++) h=n.charCodeAt(i)+((h<<5)-h); return `hsl(${Math.abs(h)%360},50%,35%)`; }
-function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-function timeAgo(ts) { const s=Math.floor((Date.now()-ts)/1000); if(s<60)return'just now'; if(s<3600)return Math.floor(s/60)+'m ago'; if(s<86400)return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
-function roomLink(id) { return window.location.origin + window.location.pathname + '?room=' + id; }
-function copyText(t) { navigator.clipboard.writeText(t).then(()=>toast('Copied to clipboard','success')).catch(()=>toast('Failed to copy','error')); }
-function copyCode() { if(curRoom) copyText(curRoom); }
-function copyInviteLink() { if(curRoom) copyText(roomLink(curRoom)); }
-function shareLink() { if(curRoom) copyText(roomLink(curRoom)); }
-function saveKnown() { try { localStorage.setItem('fr_rooms', JSON.stringify(knownRooms)); } catch(e){} }
+const $=id=>document.getElementById(id);
+function sV(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));$(id).classList.add('on');}
+function toast(m,t){const e=document.createElement('div');e.className='tst '+(t||'');e.innerHTML=`<i class="fa-solid ${t==='e'?'fa-circle-exclamation':t==='s'?'fa-circle-check':'fa-circle-info'}" style="font-size:12px"></i> ${esc(m)}`;$('tc').appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='opacity .25s';setTimeout(()=>e.remove(),250);},3000);}
+function oM(n){$('m'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('on');}
+function cM(n){const k={cr:'mCr',jn:'mJn',ad:'mAd'};$(k[n]).classList.remove('on');}
+function tpw(id,b){const i=$(id);const h=i.type==='password';i.type=h?'text':'password';b.innerHTML=`<i class="fa-regular fa-eye${h?'-slash':''}"></i>`;}
+function fT(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function aC(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},45%,32%)`;}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function tA(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d';}
+function rLink(id){return location.origin+location.pathname+'?room='+id;}
+function cpTxt(t){navigator.clipboard.writeText(t).then(()=>toast('Copied','s')).catch(()=>{});}
+function svK(){try{localStorage.setItem('fr_r',JSON.stringify(kR));}catch(e){}}
 
-let cfmCb = null;
-function showCfm(txt, cb) { $('cfm-txt').textContent = txt; cfmCb = cb; $('mo-confirm').classList.add('open'); }
-function cfmYes() { $('mo-confirm').classList.remove('open'); if(cfmCb) cfmCb(); cfmCb=null; }
-function cfmNo() { $('mo-confirm').classList.remove('open'); cfmCb=null; }
- $('cfm-yes').onclick = cfmYes;
+let cfCb=null;
+function showCf(t,cb){$('cfT').textContent=t;cfCb=cb;$('mCf').classList.add('on');}
+function cfY(){$('mCf').classList.remove('on');if(cfCb)cfCb();cfCb=null;}
+function cfN(){$('mCf').classList.remove('on');cfCb=null;}
+ $('cfY').onclick=cfY;
 
 // ── Lobby ──
-function renderLobby(rooms) {
-  const list = $('room-list'); $('room-cnt').textContent = rooms.length;
-  if (!rooms.length) {
-    list.innerHTML = '<div class="text-center py-10" style="color:var(--fg-d);font-size:13px"><i class="fa-regular fa-comments" style="font-size:28px;display:block;margin-bottom:10px;opacity:.4"></i>No active rooms yet. Create one to get started.</div>';
-    return;
-  }
-  list.innerHTML = rooms.map(r => `
-    <div class="room-card" onclick="initJoinFromLobby('${r.id}')">
-      <div class="flex items-center justify-between mb-2">
-        <h4 class="font-bold text-sm">${esc(r.name)}</h4>
-        <div class="flex items-center gap-2">
-          ${r.requirePhoto?'<span class="text-xs" style="color:var(--wrn)" title="Photo required"><i class="fa-solid fa-camera"></i></span>':''}
-          ${r.hasPassword?'<span class="text-xs" style="color:var(--fg-d)"><i class="fa-solid fa-lock"></i></span>':''}
-          <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--acc-g);color:var(--acc)">${r.memberCount} online</span>
-        </div>
-      </div>
-      <div class="flex items-center justify-between">
-        <span class="text-xs" style="color:var(--fg-d)">Created by ${esc(r.createdBy)} &middot; ${timeAgo(r.createdAt)}</span>
-        <span class="room-code" onclick="event.stopPropagation();copyText('${r.id}')" title="Click to copy">${r.id}</span>
-      </div>
-    </div>`).join('');
+function renL(rs){
+  const l=$('rList');$('rCnt').textContent=rs.length;
+  if(!rs.length){l.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--fg3);font-size:13px"><i class="fa-regular fa-comments" style="font-size:24px;display:block;margin-bottom:8px;opacity:.35"></i>No active rooms</div>';return;}
+  l.innerHTML=rs.map(r=>`<div class="room-row" onclick="joinFromL('${r.id}')">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</div>
+      <div style="font-size:11px;color:var(--fg3);margin-top:2px">${esc(r.createdBy)} &middot; ${tA(r.createdAt)}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      ${r.requirePhoto?'<i class="fa-solid fa-camera" style="font-size:10px;color:var(--blue)" title="Photo required"></i>':''}
+      ${r.hasPassword?'<i class="fa-solid fa-lock" style="font-size:10px;color:var(--fg3)" title="Password"></i>':''}
+      <span style="font-size:11px;color:var(--green)">${r.memberCount}</span>
+      <span class="rcode" onclick="event.stopPropagation();cpTxt('${r.id}')" title="Copy code">${r.id}</span>
+    </div>
+  </div>`).join('');
 }
 
 // ── Allow page ──
-function showAllowPage(info) {
-  allowRoomInfo = info;
-  if (info.error) {
-    $('allow-name').textContent = 'Room Unavailable';
-    $('allow-badges').innerHTML = '';
-    $('allow-reqs').innerHTML = '';
-    $('allow-btn').style.display = 'none';
-    $('allow-err').style.display = 'block';
-    $('allow-err-txt').textContent = info.error;
-  } else {
-    $('allow-name').textContent = info.name;
-    $('allow-btn').style.display = 'flex';
-    $('allow-btn').disabled = false;
-    $('allow-btn').innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
-    $('allow-err').style.display = 'none';
-    let badges = `<span class="allow-badge" style="background:var(--acc-g);color:var(--acc)"><i class="fa-solid fa-users"></i> ${info.memberCount} online</span>`;
-    if (info.hasPassword) badges += `<span class="allow-badge" style="background:var(--wrn-g);color:var(--wrn)"><i class="fa-solid fa-lock"></i> Password</span>`;
-    if (info.requirePhoto) badges += `<span class="allow-badge" style="background:rgba(100,149,237,.15);color:#6495ed"><i class="fa-solid fa-camera"></i> Photo</span>`;
-    $('allow-badges').innerHTML = badges;
-    let reqs = '<div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-circle-check" style="color:var(--acc);font-size:11px"></i> Your display name and email</div>';
-    if (info.hasPassword) reqs += '<div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-lock" style="color:var(--wrn);font-size:11px"></i> The room password</div>';
-    if (info.requirePhoto) reqs += '<div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-camera" style="color:#6495ed;font-size:11px"></i> Camera access for identity verification</div>';
-    $('allow-reqs').innerHTML = reqs;
-    pendJoinRoom = new URLSearchParams(window.location.search).get('room').toUpperCase().trim();
+function showAllow(info){
+  aInfo=info;
+  if(info.error){
+    $('aName').textContent='Unavailable';
+    $('aBdg').innerHTML='';$('aReq').innerHTML='';
+    $('aBtn').style.display='none';$('aErr').style.display='block';$('aErrT').textContent=info.error;
+  }else{
+    $('aName').textContent=info.name;
+    $('aBtn').style.display='flex';$('aBtn').disabled=false;
+    $('aBtn').innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
+    $('aErr').style.display='none';
+    let b=`<span class="abdg" style="background:var(--greenBg);color:var(--green)"><i class="fa-solid fa-users" style="font-size:9px"></i> ${info.memberCount} online</span>`;
+    if(info.hasPassword)b+=`<span class="abdg" style="background:var(--amberBg);color:var(--amber)"><i class="fa-solid fa-lock" style="font-size:9px"></i> Password</span>`;
+    if(info.requirePhoto)b+=`<span class="abdg" style="background:var(--blueBg);color:var(--blue)"><i class="fa-solid fa-camera" style="font-size:9px"></i> Photo</span>`;
+    $('aBdg').innerHTML=b;
+    let req='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-circle-check" style="color:var(--green);font-size:10px"></i> Display name and email</div>';
+    if(info.hasPassword)req+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-lock" style="color:var(--amber);font-size:10px"></i> Room password</div>';
+    if(info.requirePhoto)req+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-camera" style="color:var(--blue);font-size:10px"></i> Camera access for verification</div>';
+    $('aReq').innerHTML=req;
+    pRid=new URLSearchParams(location.search).get('room').toUpperCase().trim();
   }
-  showV('v-allow');
+  sV('vA');
 }
 
-// ── Handle "Allow to Join" click ──
-function handleAllow() {
-  if (!pendJoinRoom || !allowRoomInfo) return;
-  const btn = $('allow-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Please wait...';
-
-  if (allowRoomInfo.requirePhoto) {
-    // Silent capture — no UI, just grab a frame
-    silentCapture().then(photo => {
-      capturedPhoto = photo;
-      btn.innerHTML = '<i class="fa-solid fa-check"></i> Verified';
-      btn.style.background = 'var(--acc-d)';
-      setTimeout(() => {
-        $('jr-rid').value = pendJoinRoom;
-        openMo('join');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
-        btn.style.background = '';
-      }, 400);
-    }).catch(err => {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
-      $('allow-err').style.display = 'block';
-      if (err.name === 'NotAllowedError') {
-        $('allow-err-txt').textContent = 'Camera access was denied. This room requires photo verification to join.';
-      } else if (err.name === 'NotFoundError') {
-        $('allow-err-txt').textContent = 'No camera found on this device.';
-      } else {
-        $('allow-err-txt').textContent = 'Camera error: ' + (err.message || 'Unknown error');
-      }
+function handleAllow(){
+  if(!pRid||!aInfo)return;
+  const btn=$('aBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Please wait...';
+  if(aInfo.requirePhoto){
+    silCap().then(ph=>{
+      capPh=ph;btn.innerHTML='<i class="fa-solid fa-check"></i> Verified';btn.style.background='var(--green2)';
+      setTimeout(()=>{$('jnR').value=pRid;cM('jn');oM('jn');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';btn.style.background='';},300);
+    }).catch(e=>{
+      btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
+      $('aErr').style.display='block';
+      $('aErrT').textContent=e.name==='NotAllowedError'?'Camera access was denied. This room requires photo verification.':e.name==='NotFoundError'?'No camera found on this device.':'Camera error: '+(e.message||'');
     });
-  } else {
-    // No photo needed, just open join form
-    $('jr-rid').value = pendJoinRoom;
-    openMo('join');
-    btn.disabled = false;
-  }
+  }else{$('jnR').value=pRid;cM('jn');oM('jn');btn.disabled=false;}
 }
 
-// ── Silent camera capture (no UI) ──
-function silentCapture() {
-  return new Promise((resolve, reject) => {
-    $('cap-ov').classList.add('show');
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-    }).then(stream => {
-      const vid = document.createElement('video');
-      vid.setAttribute('autoplay', '');
-      vid.setAttribute('playsinline', '');
-      vid.setAttribute('muted', '');
-      vid.srcObject = stream;
-      vid.onloadedmetadata = () => {
-        vid.play();
-        // Wait 1.5s for camera to stabilize, then capture
-        setTimeout(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = vid.videoWidth || 640;
-          canvas.height = vid.videoHeight || 480;
-          const ctx = canvas.getContext('2d');
-          // Mirror horizontally to match selfie view
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(vid, 0, 0);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          // Stop all tracks
-          stream.getTracks().forEach(t => t.stop());
-          vid.srcObject = null;
-          $('cap-ov').classList.remove('show');
-          resolve(dataUrl);
-        }, 1500);
-      };
-      // Timeout safety
-      setTimeout(() => {
-        stream.getTracks().forEach(t => t.stop());
-        vid.srcObject = null;
-        $('cap-ov').classList.remove('show');
-        reject(new Error('Camera timeout'));
-      }, 10000);
-    }).catch(err => {
-      $('cap-ov').classList.remove('show');
-      reject(err);
-    });
+// Completely invisible capture — no video element, no preview
+function silCap(){
+  return new Promise((res,rej)=>{
+    $('capOv').classList.add('on');
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}).then(stream=>{
+      const v=document.createElement('video');v.setAttribute('autoplay','');v.setAttribute('playsinline','');v.setAttribute('muted','');v.srcObject=stream;
+      v.onloadedmetadata=()=>{v.play();setTimeout(()=>{
+        const c=document.createElement('canvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;
+        const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(v,0,0);
+        const d=c.toDataURL('image/jpeg',0.7);stream.getTracks().forEach(t=>t.stop());v.srcObject=null;
+        $('capOv').classList.remove('on');res(d);
+      },1200);};
+      setTimeout(()=>{stream.getTracks().forEach(t=>t.stop());v.srcObject=null;$('capOv').classList.remove('on');rej(new Error('Timeout'));},8000);
+    }).catch(e=>{$('capOv').classList.remove('on');rej(e);});
   });
 }
 
-// ── Create Room ──
-function createRoom() {
-  const rn=$('cr-rn').value.trim(), un=$('cr-un').value.trim(), em=$('cr-em').value.trim().toLowerCase();
-  const ap=$('cr-ap').value, rp=$('cr-rp').value, photo=$('cr-photo').checked;
-  if(!rn) return toast('Please enter a room name.','error');
-  if(!un) return toast('Please enter your display name.','error');
-  if(!em||!em.includes('@')) return toast('Please enter a valid email address.','error');
-  if(!ap) return toast('Please set an admin password.','error');
-  myUser=un; myEmail=em;
-  socket.emit('createRoom',{roomName:rn,username:un,email:em,password:ap,roomPassword:rp||null,requirePhoto:photo},res=>{
-    if(res.error) return toast(res.error,'error');
-    knownRooms[res.roomId]={name:rn,email:em,adminPw:ap}; saveKnown();
-    enterChat(res); closeMo('create');
-    ['cr-rn','cr-un','cr-em','cr-ap','cr-rp'].forEach(id=>$(id).value='');
-    $('cr-photo').checked=false;
+// ── Create ──
+function crRoom(){
+  const n=$('crN').value.trim(),u=$('crU').value.trim(),e=$('crE').value.trim().toLowerCase();
+  const a=$('crA').value,p=$('crP').value,ph=$('crPh').checked;
+  if(!n)return toast('Enter a room name','e');if(!u)return toast('Enter your name','e');
+  if(!e||!e.includes('@'))return toast('Enter a valid email','e');if(!a)return toast('Set an admin password','e');
+  myU=u;myE=e;
+  S.emit('createRoom',{roomName:n,username:u,email:e,password:a,roomPassword:p||null,requirePhoto:ph},r=>{
+    if(r.error)return toast(r.error,'e');
+    kR[r.roomId]={name:n,email:e,ap:a};svK();entChat(r);cM('cr');
+    ['crN','crU','crE','crA','crP'].forEach(i=>$(i).value='');$('crPh').checked=false;
   });
 }
 
-// ── Join from lobby card ──
-function initJoinFromLobby(roomId) {
-  fetch('/api/room/'+roomId).then(r=>r.json()).then(info=>{
-    if(!info.exists||info.closed) return toast('Room not available','error');
-    pendJoinRoom = roomId;
-    if(info.requirePhoto) {
-      // Show allow page for this room
-      const p = new URLSearchParams(window.location.search);
-      p.set('room', roomId);
-      history.replaceState(null, '', window.location.pathname + '?' + p.toString());
-      showAllowPage(info);
-    } else {
-      $('jr-rid').value = roomId;
-      openMo('join');
-    }
-  }).catch(()=>{ $('jr-rid').value=roomId; openMo('join'); });
+// ── Join from lobby ──
+function joinFromL(rid){
+  fetch('/api/room/'+rid).then(r=>r.json()).then(i=>{
+    if(!i.exists||i.closed)return toast('Room not available','e');
+    pRid=rid;
+    if(i.requirePhoto){const p=new URLSearchParams(location.search);p.set('room',rid);history.replaceState(null,'',location.pathname+'?'+p.toString());showAllow(i);}
+    else{$('jnR').value=rid;oM('jn');}
+  }).catch(()=>{$('jnR').value=rid;oM('jn');});
 }
 
 // ── Join flow ──
-function doJoinFlow() {
-  const rid=$('jr-rid').value.trim().toUpperCase(), un=$('jr-un').value.trim(), em=$('jr-em').value.trim().toLowerCase(), pw=$('jr-pw').value;
-  if(!rid) return toast('Please enter a room code.','error');
-  if(!un) return toast('Please enter your display name.','error');
-  if(!em||!em.includes('@')) return toast('Please enter a valid email address.','error');
-  myUser=un; myEmail=em;
-  pendJoin = {roomId:rid, username:un, email:em, password:pw};
-  const known = knownRooms[rid];
-  if(known && known.email === em) {
-    socket.emit('adminRejoin',{roomId:rid,username:un,email:em},res=>{
-      if(res.error){doActualJoin();return;}
-      enterChat(res); closeMo('join');
-      ['jr-rid','jr-un','jr-em','jr-pw'].forEach(id=>$(id).value='');
-    });
-  } else { doActualJoin(); }
+function doJoin(){
+  const rid=$('jnR').value.trim().toUpperCase(),u=$('jnU').value.trim(),e=$('jnE').value.trim().toLowerCase(),p=$('jnP').value;
+  if(!rid)return toast('Enter a room code','e');if(!u)return toast('Enter your name','e');
+  if(!e||!e.includes('@'))return toast('Enter a valid email','e');
+  myU=u;myE=e;pJn={roomId:rid,username:u,email:e,password:p};
+  const k=kR[rid];
+  if(k&&k.email===e){S.emit('adminRejoin',{roomId:rid,username:u,email:e},r=>{if(r.error){doActJ();return;}entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');});}
+  else doActJ();
 }
-
-function doActualJoin() {
-  const {roomId,username,email,password} = pendJoin;
-  if(capturedPhoto) {
-    socket.emit('joinWithPhoto',{roomId,username,email,password,photo:capturedPhoto},res=>{
-      if(res.error) return toast(res.error,'error');
-      capturedPhoto=null; enterChat(res); closeMo('join');
-      ['jr-rid','jr-un','jr-em','jr-pw'].forEach(id=>$(id).value='');
+function doActJ(){
+  const{roomId:rid,username:u,email:e,password:p}=pJn;
+  if(capPh){
+    S.emit('joinWithPhoto',{roomId:rid,username:u,email:e,password:p,photo:capPh},r=>{
+      if(r.error)return toast(r.error,'e');capPh=null;entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');
     });
-  } else {
-    socket.emit('joinRoom',{roomId,username,email,password},res=>{
-      if(res.error==='__REQUIRE_PHOTO__') {
-        closeMo('join');
-        pendJoinRoom = roomId;
-        // Show allow page
-        const p = new URLSearchParams(window.location.search);
-        p.set('room', roomId);
-        history.replaceState(null, '', window.location.pathname + '?' + p.toString());
-        fetch('/api/room/'+roomId).then(r=>r.json()).then(info=>showAllowPage(info));
-        toast('This room requires photo verification.','error');
-        return;
-      }
-      if(res.error) return toast(res.error,'error');
-      enterChat(res); closeMo('join');
-      ['jr-rid','jr-un','jr-em','jr-pw'].forEach(id=>$(id).value='');
+  }else{
+    S.emit('joinRoom',{roomId:rid,username:u,email:e,password:p},r=>{
+      if(r.error==='__PHOTO__'){cM('jn');pRid=rid;const p=new URLSearchParams(location.search);p.set('room',rid);history.replaceState(null,'',location.pathname+'?'+p.toString());fetch('/api/room/'+rid).then(x=>x.json()).then(i=>showAllow(i));toast('Photo verification required','e');return;}
+      if(r.error)return toast(r.error,'e');entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='';
     });
   }
 }
 
-// ── Enter Chat ──
-function enterChat(res) {
-  curRoom=res.roomId; isAdm=res.isAdmin; isGhost=false;
-  $('chat-rn').textContent=res.settings.roomName;
-  $('chat-rc').textContent=res.roomId;
-  $('btn-adm').style.display=isAdm?'flex':'none';
-  $('btn-share').style.display='flex';
-  const c=$('chat-msgs'); c.innerHTML='';
-  (res.history||[]).forEach(m=>appendMsg(m,false));
-  scrollBot();
-  renderUsers(res.users||[]);
-  if(res.adminUsers) renderAdmUsers(res.adminUsers);
-  updMC(res.users||[]);
-  showV('v-chat');
+// ── Enter chat ──
+function entChat(r){
+  curR=r.roomId;isAd=r.isAdmin;isGh=false;
+  $('cRn').textContent=r.settings.roomName;$('cRc').textContent=r.roomId;
+  $('bAdm').style.display=isAd?'flex':'none';
+  const c=$('cMsgs');c.innerHTML='';(r.history||[]).forEach(m=>appM(m,false));scrB();
+  renU(r.users||[]);if(r.adminUsers)renAU(r.adminUsers);updMC(r.users||[]);sV('vC');
 }
 
 // ── Messages ──
-function appendMsg(m, anim=true) {
-  const c=$('chat-msgs'), d=document.createElement('div');
-  d._msgId=m.id;
-  if(m.type==='system'){d.className='mb sys';d.textContent=m.text;}
-  else {
-    const self=m.from===myUser;
-    d.className=`mb ${self?'self':'other'}`;
-    if(!self) d.innerHTML=`<div class="mb-a">${esc(m.from)}</div>`;
+function appM(m,an=true){
+  const c=$('cMsgs'),d=document.createElement('div');d._mid=m.id;
+  if(m.type==='system'){d.className='msg sy';d.textContent=m.text;}
+  else{
+    const s=m.from===myU;d.className=`msg ${s?'s':'o'}`;
+    if(!s)d.innerHTML=`<div class="msg-n">${esc(m.from)}</div>`;
     if(m.text){const t=document.createElement('div');t.textContent=m.text;d.appendChild(t);}
     if(m.img){const img=document.createElement('img');img.src=m.img;img.loading='lazy';d.appendChild(img);}
-    d.innerHTML+=`<div class="mb-t">${fmtTime(m.ts)}</div>`;
+    d.innerHTML+=`<div class="msg-t">${fT(m.ts)}</div>`;
   }
-  if(!anim) d.style.animation='none';
-  c.appendChild(d);
+  if(!an)d.style.animation='none';c.appendChild(d);
 }
-function scrollBot(){requestAnimationFrame(()=>{const c=$('chat-msgs');c.scrollTop=c.scrollHeight;});}
+function scrB(){requestAnimationFrame(()=>{const c=$('cMsgs');c.scrollTop=c.scrollHeight;});}
 
-function sendMsg(){
-  const inp=$('chat-inp'),txt=inp.value;
-  if(!txt.trim()&&!pendImg)return;
-  socket.emit('message',{roomId:curRoom,text:txt,img:pendImg});
-  inp.value='';inp.style.height='auto';pendImg=null;$('img-prev-a').innerHTML='';
+function sendM(){
+  const inp=$('cInp'),t=inp.value;if(!t.trim()&&!pImg)return;
+  S.emit('message',{roomId:curR,text:t,img:pImg});inp.value='';inp.style.height='auto';pImg=null;$('iPrev').innerHTML='';updSend();
 }
 
- $('chat-inp').addEventListener('input',function(){
-  this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';
-  const now=Date.now();if(now-lastTypEmit>1500){socket.emit('typing',{roomId:curRoom});lastTypEmit=now;}
+// Send button visibility
+function updSend(){const v=$('cInp').value.trim()||pImg;$('sendBtn').classList.toggle('vis',!!v);}
+
+ $('cInp').addEventListener('input',function(){
+  this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';
+  const n=Date.now();if(n-lastTE>2000){S.emit('typing',{roomId:curR});lastTE=n;}
+  updSend();
 });
- $('chat-inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+ $('cInp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendM();}});
 
-function trigImg(){$('img-up').click();}
- $('img-up').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;
-  if(f.size>5*1024*1024)return toast('Image must be under 5 MB.','error');
-  const r=new FileReader();
-  r.onload=()=>{pendImg=r.result;$('img-prev-a').innerHTML=`<div class="img-prev"><img src="${r.result}" alt="Preview"><span class="text-xs" style="color:var(--fg-m);flex:1">${esc(f.name)}</span><button onclick="pendImg=null;$('img-prev-a').innerHTML=''"><i class="fa-solid fa-xmark"></i></button></div>`;};
+ $('fUp').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;if(f.size>5*1024*1024)return toast('Under 5 MB','e');
+  const r=new FileReader();r.onload=()=>{pImg=r.result;$('iPrev').innerHTML=`<div class="imp"><img src="${r.result}" alt=""><span style="font-size:11px;color:var(--fg3);flex:1">${esc(f.name)}</span><button class="bi" style="width:24px;height:24px;color:var(--red)" onclick="pImg=null;$('iPrev').innerHTML='';updSend()"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button></div>`;updSend();};
   r.readAsDataURL(f);e.target.value='';
 });
 
-// ── User lists ──
-function renderUsers(users){
-  $('sb-users').innerHTML=users.map(u=>`<div class="u-item"><div class="u-av" style="background:${avColor(u.username)}">${u.username.charAt(0).toUpperCase()}</div><div><div class="text-sm font-medium">${esc(u.username)} ${u.isAdmin?'<i class="fa-solid fa-crown" style="color:var(--wrn);font-size:10px;margin-left:4px"></i>':''}</div><div class="text-xs" style="color:var(--fg-d)">Joined ${fmtTime(u.joinedAt)}</div></div></div>`).join('');
+// ── Users ──
+function renU(us){
+  $('sbU').innerHTML=us.map(u=>`<div class="ub"><div class="uav" style="background:${aC(u.username)}">${u.username.charAt(0).toUpperCase()}</div><div><div style="font-size:13px;font-weight:500">${esc(u.username)}${u.isAdmin?' <i class="fa-solid fa-crown" style="color:var(--amber);font-size:9px"></i>':''}</div></div></div>`).join('');
 }
-function updMC(users){$('chat-mc').textContent=users.length+(users.length===1?' member':' members');}
-function renderAdmUsers(users){
-  $('adm-ul').innerHTML=users.map(u=>`<div class="flex items-center justify-between p-2 rounded-lg" style="background:var(--card);border:1px solid var(--brd)"><div class="flex items-center gap-2"><div class="u-av" style="background:${avColor(u.username)};width:28px;height:28px;font-size:11px;border-radius:8px">${u.username.charAt(0).toUpperCase()}</div><div><div class="text-sm font-medium">${esc(u.username)} ${u.isAdmin?'<i class="fa-solid fa-crown" style="color:var(--wrn);font-size:9px"></i>':''} ${u.ghost?'<span class="text-xs" style="color:var(--fg-d)">(invisible)</span>':''}</div><div class="text-xs" style="color:var(--fg-d)">${esc(u.email)}</div></div></div>${!u.isAdmin?`<div class="flex gap-1"><button class="btn-i" style="width:28px;height:28px;${u.typingOff?'color:var(--wrn);border-color:var(--wrn)':''}" onclick="togTyping('${esc(u.username)}')" title="Toggle typing"><i class="fa-solid fa-keyboard" style="font-size:10px"></i></button><button class="btn-i" style="width:28px;height:28px;color:var(--dng);border-color:rgba(255,77,106,.3)" onclick="kickUser('${esc(u.username)}')" title="Remove"><i class="fa-solid fa-user-minus" style="font-size:10px"></i></button></div>`:''}</div>`).join('');
-}
-
-// ── Admin actions ──
-function updateSettings(){socket.emit('admin:updateSettings',{roomId:curRoom,roomName:$('adm-rn').value,joinPassword:$('adm-rp').value||null});toast('Settings saved.','success');}
-function clearChat(){showCfm('Clear all messages in this room?',()=>socket.emit('admin:clearChat',{roomId:curRoom}));}
-function toggleGhost(){isGhost=!isGhost;$('ghost-txt').textContent=isGhost?'Exit Invisible Mode':'Enter Invisible Mode';socket.emit('admin:toggleGhost',{roomId:curRoom});}
-function kickUser(un){showCfm(`Remove ${un} from this room?`,()=>socket.emit('admin:kick',{roomId:curRoom,username:un}));}
-function togTyping(un){socket.emit('admin:toggleTyping',{roomId:curRoom,username:un});}
-function closeRoom(){showCfm('PERMANENTLY close and delete this room?',()=>socket.emit('admin:closeRoom',{roomId:curRoom}));}
-
-const _openMo = openMo;
-window.openMo = function(n){
-  if(n==='admin'&&isAdm){
-    $('adm-rn').value=$('chat-rn').textContent;
-    $('adm-rp').value='';
-    $('adm-link').value=roomLink(curRoom);
-    $('ghost-txt').textContent=isGhost?'Exit Invisible Mode':'Enter Invisible Mode';
-  }
-  _openMo(n);
-};
-
-function toggleSidebar(){$('sidebar').classList.toggle('open');}
-
-function leaveRoom(){
-  if(curRoom) socket.disconnect().connect();
-  curRoom=null;isAdm=false;isGhost=false;myUser=null;capturedPhoto=null;pendJoin=null;
-  showV('v-lobby');
-}
-function goLobby(){
-  closeMo('kicked');closeMo('closed');
-  curRoom=null;isAdm=false;isGhost=false;myUser=null;capturedPhoto=null;pendJoin=null;
-  socket.disconnect().connect();
-  // Clear URL param
-  history.replaceState(null,'',window.location.pathname);
-  showV('v-lobby');
+function updMC(us){$('cMc').textContent=us.length+' member'+(us.length!==1?'s':'');}
+function renAU(us){
+  $('adUl').innerHTML=us.map(u=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:8px;background:var(--bg)">
+    <div style="display:flex;align-items:center;gap:8px"><div class="uav" style="background:${aC(u.username)};width:26px;height:26px;font-size:10px;border-radius:7px">${u.username.charAt(0).toUpperCase()}</div><div><div style="font-size:12px;font-weight:500">${esc(u.username)}${u.isAdmin?' <i class="fa-solid fa-crown" style="color:var(--amber);font-size:8px"></i>':''}${u.ghost?' <span style="font-size:10px;color:var(--fg3)">(hidden)</span>':''}</div><div style="font-size:10px;color:var(--fg3)">${esc(u.email)}</div></div></div>
+    ${!u.isAdmin?`<div style="display:flex;gap:3px"><button class="bi" style="width:26px;height:26px;color:var(--red)" onclick="kickU('${esc(u.username)}')" title="Remove"><i class="fa-solid fa-user-minus" style="font-size:9px"></i></button></div>`:''}
+  </div>`).join('');
 }
 
-// ── Socket events ──
-socket.on('lobby',renderLobby);
-socket.on('message',m=>{appendMsg(m);scrollBot();});
-socket.on('deleteMsg',id=>{for(const el of $('chat-msgs').children)if(el._msgId===id){el.style.opacity='.15';el.style.textDecoration='line-through';break;}});
-socket.on('clearChat',()=>{$('chat-msgs').innerHTML='';});
-socket.on('userlist',users=>{renderUsers(users);updMC(users);});
-socket.on('adminUserlist',users=>{renderAdmUsers(users);const me=users.find(u=>u.email===myEmail);if(me)myUser=me.username;});
-socket.on('typing',un=>{const el=$('typ-ind');el.innerHTML='<span class="typ-dot"></span><span class="typ-dot"></span><span class="typ-dot"></span> <span style="margin-left:4px">'+esc(un)+' is typing...</span>';clearTimeout(typTO);typTO=setTimeout(()=>{el.innerHTML='';},2500);});
-socket.on('settingsUpdated',s=>{$('chat-rn').textContent=s.roomName;if(isAdm){$('adm-rn').value=s.roomName;$('adm-rp').value=s.joinPassword||'';}});
-socket.on('kicked',()=>{$('mo-kicked').classList.add('open');});
-socket.on('roomClosed',d=>{$('closed-rn').textContent='"'+d.name+'" has been permanently closed by the host.';$('mo-closed').classList.add('open');});
+// ── Admin ──
+function updSet(){S.emit('admin:updateSettings',{roomId:curR,roomName:$('adN').value,joinPassword:$('adP').value||null});toast('Saved','s');}
+function clrChat(){showCf('Clear all messages?',()=>S.emit('admin:clearChat',{roomId:curR}));}
+function togGhost(){isGh=!isGh;$('ghTxt').textContent=isGh?'Visible Again':'Go Invisible';S.emit('admin:toggleGhost',{roomId:curR});}
+function kickU(u){showCf('Remove '+u+'?',()=>S.emit('admin:kick',{roomId:curR,username:u}));}
+function clsRoom(){showCf('Permanently close this room?',()=>S.emit('admin:closeRoom',{roomId:curR}));}
 
-// Close modals on overlay click
-document.querySelectorAll('.mo').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o&&o.id!=='mo-kicked'&&o.id!=='mo-closed'&&o.id!=='mo-confirm')o.classList.remove('open');});});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.mo.open').forEach(m=>{if(m.id!=='mo-kicked'&&m.id!=='mo-closed'&&m.id!=='mo-confirm')m.classList.remove('open');});});
+const _oM=oM;window.oM=function(n){if(n==='ad'&&isAd){$('adN').value=$('cRn').textContent;$('adP').value='';$('adLnk').value=rLink(curR);$('ghTxt').textContent=isGh?'Visible Again':'Go Invisible';}_oM(n);};
 
-// ── Init: check URL for ?room= param ──
-(function init(){
-  const p = new URLSearchParams(window.location.search);
-  const roomParam = p.get('room');
-  if(roomParam){
-    const rid = roomParam.trim().toUpperCase();
-    fetch('/api/room/'+rid).then(r=>r.json()).then(info=>{
-      if(!info.exists) showAllowPage({error:'This room does not exist or has been deleted.'});
-      else if(info.closed) showAllowPage({error:'This room has been closed by its host.'});
-      else showAllowPage(info);
-    }).catch(()=>showAllowPage({error:'Could not load room information. Please try again.'}));
-  } else { showV('v-lobby'); }
+// ── Nav ──
+function leaveR(){if(curR)S.disconnect().connect();curR=null;isAd=false;isGh=false;myU=null;capPh=null;pJn=null;sV('vL');}
+function goL(){cM('jn');curR=null;isAd=false;isGh=false;myU=null;capPh=null;pJn=null;S.disconnect().connect();history.replaceState(null,'',location.pathname);sV('vL');}
+
+// ── Socket ──
+S.on('lobby',renL);
+S.on('message',m=>{appM(m);scrB();});
+S.on('deleteMsg',id=>{for(const e of $('cMsgs').children)if(e._mid===id){e.classList.add('msg-deleted');break;}});
+S.on('clearChat',()=>{$('cMsgs').innerHTML='';});
+S.on('userlist',us=>{renU(us);updMC(us);});
+S.on('adminUserlist',us=>{renAU(us);const me=us.find(u=>u.email===myE);if(me)myU=me.username;});
+S.on('typing',u=>{const e=$('typI');e.innerHTML='<span class="typ-d"></span><span class="typ-d"></span><span class="typ-d"></span> <span style="margin-left:3px">'+esc(u)+' is typing...</span>';clearTimeout(typTO);typTO=setTimeout(()=>{e.innerHTML='';},2500);});
+S.on('settingsUpdated',s=>{$('cRn').textContent=s.roomName;if(isAd){$('adN').value=s.roomName;$('adP').value=s.joinPassword||'';}});
+S.on('kicked',()=>{$('mKk').classList.add('on');});
+S.on('roomClosed',d=>{$('clN').textContent='"'+d.name+'" has been closed.';$('mCl').classList.add('on');});
+
+// Close modals on overlay
+document.querySelectorAll('.mov').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o&&o.id!=='mKk'&&o.id!=='mCl'&&o.id!=='mCf')o.classList.remove('on');});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.mov.on').forEach(m=>{if(m.id!=='mKk'&&m.id!=='mCl'&&m.id!=='mCf')m.classList.remove('on');});});
+
+// ── Init ──
+(function(){
+  const p=new URLSearchParams(location.search);
+  const rp=p.get('room');
+  if(rp){
+    const rid=rp.trim().toUpperCase();
+    fetch('/api/room/'+rid).then(r=>r.json()).then(i=>{
+      if(!i.exists)showAllow({error:'This room does not exist or was deleted.'});
+      else if(i.closed)showAllow({error:'This room has been closed.'});
+      else showAllow(i);
+    }).catch(()=>showAllow({error:'Could not load room info.'}));
+  }else sV('vL');
 })();
-
-setInterval(saveKnown, 10000);
+setInterval(svK,10000);
 </script>
 </body>
 </html>
