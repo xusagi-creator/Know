@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Freedom</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#0b0f0e;--bg2:#121917;--bg3:#1a2320;
   --brd:#1f3029;--brd2:#2a4038;
@@ -17,63 +17,54 @@
   --green:#22c55e;--green2:#16a34a;--greenBg:rgba(34,197,94,.1);
   --red:#ef4444;--redBg:rgba(239,68,68,.1);
   --amber:#f59e0b;--amberBg:rgba(245,158,11,.1);
-  --blue:#3b82f6;--blueBg:rgba(59,130,246,.1);
 }
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);height:100vh;height:100dvh;overflow:hidden}
 .view{display:none;height:100%;height:100dvh}.view.on{display:flex}
 
-/* Inputs */
 .ipt{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--fg);padding:11px 14px;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border .2s}
 .ipt::placeholder{color:var(--fg3)}.ipt:focus{border-color:var(--green)}
 
-/* Buttons */
 .bp{background:var(--green);color:#000;font-weight:600;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
 .bp:hover{background:var(--green2)}.bp:active{transform:scale(.97)}.bp:disabled{opacity:.4;cursor:default;transform:none}
 .bs{background:var(--bg3);color:var(--fg);font-weight:500;padding:11px 20px;border-radius:10px;border:1px solid var(--brd);cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
-.bs:hover{background:var(--brd2)}.bd{background:var(--redBg);color:var(--red);font-weight:600;padding:9px 16px;border-radius:9px;border:1px solid rgba(239,68,68,.2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.bs:hover{background:var(--brd2)}
+.bd{background:var(--redBg);color:var(--red);font-weight:600;padding:9px 16px;border-radius:9px;border:1px solid rgba(239,68,68,.2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
 .bd:hover{background:rgba(239,68,68,.18)}
 .bi{background:none;border:none;color:var(--fg3);width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
 .bi:hover{background:var(--bg3);color:var(--fg)}
 
-/* Scrollbar */
 .scr::-webkit-scrollbar{width:5px}.scr::-webkit-scrollbar-track{background:transparent}.scr::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
 
-/* LOBBY */
 .lobby{flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
 .lobby-in{width:100%;max-width:560px}
 .room-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;cursor:pointer;transition:all .15s}
 .room-row:hover{border-color:var(--brd2);background:var(--bg3)}
-.rcode{font-family:'Inter',monospace;font-weight:700;letter-spacing:2px;font-size:12px;color:var(--green);background:var(--greenBg);padding:3px 8px;border-radius:6px;cursor:pointer}
+.rcode{font-family:'Inter',monospace;font-weight:700;letter-spacing:2px;font-size:12px;color:var(--green);background:var(--greenBg);padding:3px 8px;border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap}
 .rcode:hover{background:rgba(34,197,94,.18)}
 
-/* ALLOW PAGE */
 .allow{flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .allow-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:40px 32px;max-width:400px;width:100%;text-align:center}
 .abdg{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px}
 
-/* CHAT */
 .chat{flex-direction:column;height:100%;height:100dvh}
-.chdr{background:var(--bg2);border-bottom:1px solid var(--brd);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.cbody{flex:1;display:flex;overflow:hidden}
-.cmsgs{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:2px}
-.cinp{background:var(--bg2);border-top:1px solid var(--brd);padding:10px 12px;flex-shrink:0}
+.chdr{background:var(--bg2);border-bottom:1px solid var(--brd);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;padding-top:max(12px,env(safe-area-inset-top))}
+.cbody{flex:1;display:flex;overflow:hidden;position:relative}
+.cmsgs{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cinp{background:var(--bg2);border-top:1px solid var(--brd);padding:10px 12px;flex-shrink:0;padding-bottom:max(10px,env(safe-area-inset-bottom))}
 
-/* Messages */
 .msg{max-width:72%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-wrap:break-word;position:relative}
 .msg.o{background:var(--bg3);align-self:flex-start;border-bottom-left-radius:4px}
 .msg.s{background:var(--greenBg);border:1px solid rgba(34,197,94,.15);align-self:flex-end;border-bottom-right-radius:4px}
 .msg.sy{background:none;color:var(--fg3);font-size:12px;align-self:center;padding:4px 0;max-width:90%}
-.msg img{max-width:260px;max-height:260px;border-radius:10px;margin-top:6px;display:block}
+.msg img{max-width:min(260px,100%);max-height:260px;border-radius:10px;margin-top:6px;display:block}
 .msg-n{font-size:11px;font-weight:600;color:var(--green);margin-bottom:2px}
 .msg-t{font-size:10px;color:var(--fg3);margin-top:3px;text-align:right}
-.msg-deleted{opacity:.2;text-decoration:line-through;pointer-events:none}
+.msg-del{opacity:.2;text-decoration:line-through;pointer-events:none}
 
-/* Typing */
 .typ{font-size:12px;color:var(--fg3);padding:2px 16px 6px;height:20px;display:flex;align-items:center;gap:5px}
 .typ-d{width:4px;height:4px;background:var(--fg3);border-radius:50%;animation:tb 1.4s infinite}
 .typ-d:nth-child(2){animation-delay:.15s}.typ-d:nth-child(3){animation-delay:.3s}
 
-/* Input bar */
 .inp-bar{display:flex;align-items:flex-end;gap:6px}
 .inp-bar textarea{flex:1;background:var(--bg);border:1px solid var(--brd);color:var(--fg);padding:10px 14px;border-radius:20px;font-size:14px;font-family:inherit;outline:none;resize:none;max-height:100px;line-height:1.4;transition:border .2s}
 .inp-bar textarea::placeholder{color:var(--fg3)}
@@ -82,7 +73,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
 .send-btn.vis{opacity:1;transform:scale(1);pointer-events:auto}
 .send-btn:hover{background:var(--green2)}.send-btn:active{transform:scale(.9)}
 
-/* Sidebar */
 .sb{width:260px;background:var(--bg2);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
 .sb-h{padding:14px 16px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:600;color:var(--fg2)}
 .sb-b{flex:1;overflow-y:auto;padding:8px}
@@ -90,54 +80,61 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
 .ub:hover{background:var(--bg3)}
 .uav{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#fff}
 
-/* Modal */
-.mov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.sb-bk{display:none}
+
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);padding:16px}
 .mov.on{display:flex}
-.mdl{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:24px;width:92%;max-width:420px;animation:mIn .2s ease-out}
+.mdl{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:24px;width:92%;max-width:420px;max-height:calc(100dvh - 32px);overflow-y:auto;animation:mIn .2s ease-out}
 .mdl-lg{max-width:500px}
 
-/* Toast */
-.tc{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.tc{position:fixed;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:200;display:flex;flex-direction:column;gap:6px;max-width:calc(100vw - 32px)}
 .tst{background:var(--bg3);border:1px solid var(--brd);color:var(--fg);padding:10px 16px;border-radius:10px;font-size:13px;animation:tIn .25s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px}
 .tst.e{border-color:rgba(239,68,68,.3);color:var(--red)}.tst.s{border-color:rgba(34,197,94,.3);color:var(--green)}
 
-/* Checkbox */
 .ckr{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:11px 13px;background:var(--bg);border:1px solid var(--brd);border-radius:10px;transition:all .15s;user-select:none}
 .ckr:hover{border-color:var(--brd2)}.ckr input{display:none}
 .ckb{width:18px;height:18px;border-radius:5px;border:2px solid var(--brd2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;margin-top:1px}
 .ckr input:checked~.ckb{background:var(--green);border-color:var(--green)}
 .ckb i{font-size:9px;color:#000;opacity:0;transition:opacity .1s}.ckr input:checked~.ckb i{opacity:1}
 
-/* Pw toggle */
 .pww{position:relative}.pwt{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--fg3);cursor:pointer;font-size:13px}
 
-/* Img preview */
 .imp{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:10px;margin-bottom:6px}
 .imp img{height:40px;border-radius:6px}
-
-/* Capture overlay (invisible) */
-#capOv{position:fixed;inset:0;z-index:90;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-#capOv.on{display:flex}
-.cspin{width:36px;height:36px;border:3px solid var(--brd);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
 
 @keyframes mIn{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:none}}
 @keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 @keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
-@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 
+/* Laptop / tablet: slim the members rail so the message column keeps room to breathe */
+@media(min-width:641px) and (max-width:1000px){
+  .sb{width:210px}
+}
+
+/* Mobile */
 @media(max-width:640px){
-  .sb{position:fixed;right:0;top:0;bottom:0;z-index:50;transform:translateX(100%);transition:transform .25s}
+  .sb{position:fixed;right:0;top:0;bottom:0;width:80vw;max-width:300px;z-index:50;transform:translateX(100%);transition:transform .25s;padding-bottom:env(safe-area-inset-bottom)}
   .sb.on{transform:translateX(0)}
+  .sb-bk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:49}
+  .sb-bk.on{display:block}
   .msg{max-width:85%}
   .lobby-in{max-width:100%}
+  .chdr{padding:10px 12px;gap:6px}
+  .chdr .bi{width:34px;height:34px}
+  #cRn{font-size:13px}
+  /* iOS/Android zoom in on any input under 16px font-size — keep these at 16px on touch-sized screens */
+  .ipt,.inp-bar textarea{font-size:16px}
+}
+@media(max-width:380px){
+  .mdl{padding:18px}
+  .allow-card{padding:28px 20px}
 }
 </style>
 </head>
 <body>
 
 <div class="tc" id="tc"></div>
-<div id="capOv"><div class="cspin"></div><p style="color:var(--fg2);font-size:13px">Verifying...</p></div>
 
 <!-- ═══════ LOBBY ═══════ -->
 <div id="vL" class="view on lobby" style="animation:fi .4s">
@@ -203,10 +200,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
     </div>
     <button class="bi" onclick="cpTxt(rLink(curR))" title="Copy invite link"><i class="fa-solid fa-link" style="font-size:12px"></i></button>
     <button id="bAdm" class="bi" onclick="oM('ad')" title="Admin" style="display:none"><i class="fa-solid fa-shield-halved" style="font-size:12px"></i></button>
-    <button class="bi" onclick="$('sb').classList.toggle('on')" title="Members"><i class="fa-solid fa-users" style="font-size:12px"></i></button>
+    <button class="bi" onclick="toggleSb()" title="Members"><i class="fa-solid fa-users" style="font-size:12px"></i></button>
   </div>
   <div class="cbody">
     <div class="cmsgs scr" id="cMsgs"></div>
+    <div class="sb-bk" id="sbBk" onclick="toggleSb()"></div>
     <div class="sb scr" id="sb">
       <div class="sb-h">Members</div>
       <div class="sb-b" id="sbU"></div>
@@ -226,7 +224,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
 
 <!-- ═══════ MODALS ═══════ -->
 
-<!-- Create -->
 <div class="mov" id="mCr">
   <div class="mdl">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -237,15 +234,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
       <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM NAME</label><input id="crN" class="ipt" placeholder="e.g. Sprint Planning" maxlength="50"></div>
       <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">YOUR NAME</label><input id="crU" class="ipt" placeholder="e.g. Alex Morgan" maxlength="24"></div>
       <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">EMAIL</label><input id="crE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
-      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ADMIN PASSWORD</label><div class="pww"><input id="crA" class="ipt" type="password" placeholder="To manage this room"><button class="pwt" onclick="tpw('crA',this)"><i class="fa-regular fa-eye"></i></button></div></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ADMIN PASSWORD</label><div class="pww"><input id="crA" class="ipt" type="password" placeholder="To manage this room"><button class="pwt" onclick="tpw('crA',this)"><i class="fa-regular fa-eye"></i></button></div><div style="font-size:11px;color:var(--fg3);margin-top:4px">Needed to rejoin as host later — nothing else can restore admin access.</div></div>
       <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM PASSWORD <span style="font-weight:400">(optional)</span></label><div class="pww"><input id="crP" class="ipt" type="password" placeholder="Leave empty for open access"><button class="pwt" onclick="tpw('crP',this)"><i class="fa-regular fa-eye"></i></button></div></div>
-      <label class="ckr"><input type="checkbox" id="crPh"><div class="ckb"><i class="fa-solid fa-check"></i></div><div><div style="font-size:13px;font-weight:500">Require Participant Photo</div><div style="font-size:11px;color:var(--fg3);margin-top:2px">Captures silently from front camera and sends to host via Telegram</div></div></label>
       <button class="bp" style="width:100%;justify-content:center;margin-top:4px" onclick="crRoom()"><i class="fa-solid fa-plus" style="font-size:12px"></i> Create Room</button>
     </div>
   </div>
 </div>
 
-<!-- Join -->
 <div class="mov" id="mJn">
   <div class="mdl">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -265,7 +260,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
   </div>
 </div>
 
-<!-- Admin -->
 <div class="mov" id="mAd">
   <div class="mdl mdl-lg">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -296,7 +290,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
   </div>
 </div>
 
-<!-- Confirm -->
 <div class="mov" id="mCf">
   <div class="mdl" style="text-align:center;max-width:340px">
     <i class="fa-solid fa-triangle-exclamation" style="font-size:28px;color:var(--amber);margin-bottom:10px;display:block"></i>
@@ -308,7 +301,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
   </div>
 </div>
 
-<!-- Kicked -->
 <div class="mov" id="mKk">
   <div class="mdl" style="text-align:center">
     <i class="fa-solid fa-ban" style="font-size:36px;color:var(--red);margin-bottom:12px;display:block"></i>
@@ -318,7 +310,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
   </div>
 </div>
 
-<!-- Closed -->
 <div class="mov" id="mCl">
   <div class="mdl" style="text-align:center">
     <i class="fa-solid fa-door-closed" style="font-size:36px;color:var(--amber);margin-bottom:12px;display:block"></i>
@@ -331,7 +322,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--f
 <script>
 const S=io();
 let curR=null,myU=null,myE=null,isAd=false,isGh=false;
-let pImg=null,capPh=null,pRid=null,pJn=null;
+let pImg=null,pRid=null,pJn=null;
 let typTO=null,lastTE=0;
 let kR={};try{Object.assign(kR,JSON.parse(localStorage.getItem('fr_r')||'{}'));}catch(e){}
 let aInfo=null;
@@ -356,6 +347,8 @@ function cfY(){$('mCf').classList.remove('on');if(cfCb)cfCb();cfCb=null;}
 function cfN(){$('mCf').classList.remove('on');cfCb=null;}
  $('cfY').onclick=cfY;
 
+function toggleSb(){$('sb').classList.toggle('on');$('sbBk').classList.toggle('on');}
+
 // ── Lobby ──
 function renL(rs){
   const l=$('rList');$('rCnt').textContent=rs.length;
@@ -366,7 +359,6 @@ function renL(rs){
       <div style="font-size:11px;color:var(--fg3);margin-top:2px">${esc(r.createdBy)} &middot; ${tA(r.createdAt)}</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-      ${r.requirePhoto?'<i class="fa-solid fa-camera" style="font-size:10px;color:var(--blue)" title="Photo required"></i>':''}
       ${r.hasPassword?'<i class="fa-solid fa-lock" style="font-size:10px;color:var(--fg3)" title="Password"></i>':''}
       <span style="font-size:11px;color:var(--green)">${r.memberCount}</span>
       <span class="rcode" onclick="event.stopPropagation();cpTxt('${r.id}')" title="Copy code">${r.id}</span>
@@ -374,7 +366,7 @@ function renL(rs){
   </div>`).join('');
 }
 
-// ── Allow page ──
+// ── Allow page (shown when opening a shared invite link) ──
 function showAllow(info){
   aInfo=info;
   if(info.error){
@@ -388,11 +380,9 @@ function showAllow(info){
     $('aErr').style.display='none';
     let b=`<span class="abdg" style="background:var(--greenBg);color:var(--green)"><i class="fa-solid fa-users" style="font-size:9px"></i> ${info.memberCount} online</span>`;
     if(info.hasPassword)b+=`<span class="abdg" style="background:var(--amberBg);color:var(--amber)"><i class="fa-solid fa-lock" style="font-size:9px"></i> Password</span>`;
-    if(info.requirePhoto)b+=`<span class="abdg" style="background:var(--blueBg);color:var(--blue)"><i class="fa-solid fa-camera" style="font-size:9px"></i> Photo</span>`;
     $('aBdg').innerHTML=b;
     let req='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-circle-check" style="color:var(--green);font-size:10px"></i> Display name and email</div>';
     if(info.hasPassword)req+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-lock" style="color:var(--amber);font-size:10px"></i> Room password</div>';
-    if(info.requirePhoto)req+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-camera" style="color:var(--blue);font-size:10px"></i> Camera access for verification</div>';
     $('aReq').innerHTML=req;
     pRid=new URLSearchParams(location.search).get('room').toUpperCase().trim();
   }
@@ -401,47 +391,20 @@ function showAllow(info){
 
 function handleAllow(){
   if(!pRid||!aInfo)return;
-  const btn=$('aBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Please wait...';
-  if(aInfo.requirePhoto){
-    silCap().then(ph=>{
-      capPh=ph;btn.innerHTML='<i class="fa-solid fa-check"></i> Verified';btn.style.background='var(--green2)';
-      setTimeout(()=>{$('jnR').value=pRid;cM('jn');oM('jn');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';btn.style.background='';},300);
-    }).catch(e=>{
-      btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
-      $('aErr').style.display='block';
-      $('aErrT').textContent=e.name==='NotAllowedError'?'Camera access was denied. This room requires photo verification.':e.name==='NotFoundError'?'No camera found on this device.':'Camera error: '+(e.message||'');
-    });
-  }else{$('jnR').value=pRid;cM('jn');oM('jn');btn.disabled=false;}
-}
-
-// Completely invisible capture — no video element, no preview
-function silCap(){
-  return new Promise((res,rej)=>{
-    $('capOv').classList.add('on');
-    navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}).then(stream=>{
-      const v=document.createElement('video');v.setAttribute('autoplay','');v.setAttribute('playsinline','');v.setAttribute('muted','');v.srcObject=stream;
-      v.onloadedmetadata=()=>{v.play();setTimeout(()=>{
-        const c=document.createElement('canvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;
-        const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(v,0,0);
-        const d=c.toDataURL('image/jpeg',0.7);stream.getTracks().forEach(t=>t.stop());v.srcObject=null;
-        $('capOv').classList.remove('on');res(d);
-      },1200);};
-      setTimeout(()=>{stream.getTracks().forEach(t=>t.stop());v.srcObject=null;$('capOv').classList.remove('on');rej(new Error('Timeout'));},8000);
-    }).catch(e=>{$('capOv').classList.remove('on');rej(e);});
-  });
+  $('jnR').value=pRid;oM('jn');
 }
 
 // ── Create ──
 function crRoom(){
   const n=$('crN').value.trim(),u=$('crU').value.trim(),e=$('crE').value.trim().toLowerCase();
-  const a=$('crA').value,p=$('crP').value,ph=$('crPh').checked;
+  const a=$('crA').value,p=$('crP').value;
   if(!n)return toast('Enter a room name','e');if(!u)return toast('Enter your name','e');
   if(!e||!e.includes('@'))return toast('Enter a valid email','e');if(!a)return toast('Set an admin password','e');
   myU=u;myE=e;
-  S.emit('createRoom',{roomName:n,username:u,email:e,password:a,roomPassword:p||null,requirePhoto:ph},r=>{
+  S.emit('createRoom',{roomName:n,username:u,email:e,password:a,roomPassword:p||null},r=>{
     if(r.error)return toast(r.error,'e');
     kR[r.roomId]={name:n,email:e,ap:a};svK();entChat(r);cM('cr');
-    ['crN','crU','crE','crA','crP'].forEach(i=>$(i).value='');$('crPh').checked=false;
+    ['crN','crU','crE','crA','crP'].forEach(i=>$(i).value='');
   });
 }
 
@@ -449,9 +412,7 @@ function crRoom(){
 function joinFromL(rid){
   fetch('/api/room/'+rid).then(r=>r.json()).then(i=>{
     if(!i.exists||i.closed)return toast('Room not available','e');
-    pRid=rid;
-    if(i.requirePhoto){const p=new URLSearchParams(location.search);p.set('room',rid);history.replaceState(null,'',location.pathname+'?'+p.toString());showAllow(i);}
-    else{$('jnR').value=rid;oM('jn');}
+    $('jnR').value=rid;oM('jn');
   }).catch(()=>{$('jnR').value=rid;oM('jn');});
 }
 
@@ -462,21 +423,19 @@ function doJoin(){
   if(!e||!e.includes('@'))return toast('Enter a valid email','e');
   myU=u;myE=e;pJn={roomId:rid,username:u,email:e,password:p};
   const k=kR[rid];
-  if(k&&k.email===e){S.emit('adminRejoin',{roomId:rid,username:u,email:e},r=>{if(r.error){doActJ();return;}entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');});}
-  else doActJ();
+  if(k&&k.email===e){
+    S.emit('adminRejoin',{roomId:rid,username:u,email:e,password:k.ap},r=>{
+      if(r.error){doActJ();return;}
+      entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');
+    });
+  }else doActJ();
 }
 function doActJ(){
   const{roomId:rid,username:u,email:e,password:p}=pJn;
-  if(capPh){
-    S.emit('joinWithPhoto',{roomId:rid,username:u,email:e,password:p,photo:capPh},r=>{
-      if(r.error)return toast(r.error,'e');capPh=null;entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');
-    });
-  }else{
-    S.emit('joinRoom',{roomId:rid,username:u,email:e,password:p},r=>{
-      if(r.error==='__PHOTO__'){cM('jn');pRid=rid;const p=new URLSearchParams(location.search);p.set('room',rid);history.replaceState(null,'',location.pathname+'?'+p.toString());fetch('/api/room/'+rid).then(x=>x.json()).then(i=>showAllow(i));toast('Photo verification required','e');return;}
-      if(r.error)return toast(r.error,'e');entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='';
-    });
-  }
+  S.emit('joinRoom',{roomId:rid,username:u,email:e,password:p},r=>{
+    if(r.error)return toast(r.error,'e');
+    entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');
+  });
 }
 
 // ── Enter chat ──
@@ -486,6 +445,7 @@ function entChat(r){
   $('bAdm').style.display=isAd?'flex':'none';
   const c=$('cMsgs');c.innerHTML='';(r.history||[]).forEach(m=>appM(m,false));scrB();
   renU(r.users||[]);if(r.adminUsers)renAU(r.adminUsers);updMC(r.users||[]);sV('vC');
+  $('sb').classList.remove('on');$('sbBk').classList.remove('on');
 }
 
 // ── Messages ──
@@ -508,7 +468,6 @@ function sendM(){
   S.emit('message',{roomId:curR,text:t,img:pImg});inp.value='';inp.style.height='auto';pImg=null;$('iPrev').innerHTML='';updSend();
 }
 
-// Send button visibility
 function updSend(){const v=$('cInp').value.trim()||pImg;$('sendBtn').classList.toggle('vis',!!v);}
 
  $('cInp').addEventListener('input',function(){
@@ -546,13 +505,13 @@ function clsRoom(){showCf('Permanently close this room?',()=>S.emit('admin:close
 const _oM=oM;window.oM=function(n){if(n==='ad'&&isAd){$('adN').value=$('cRn').textContent;$('adP').value='';$('adLnk').value=rLink(curR);$('ghTxt').textContent=isGh?'Visible Again':'Go Invisible';}_oM(n);};
 
 // ── Nav ──
-function leaveR(){if(curR)S.disconnect().connect();curR=null;isAd=false;isGh=false;myU=null;capPh=null;pJn=null;sV('vL');}
-function goL(){cM('jn');curR=null;isAd=false;isGh=false;myU=null;capPh=null;pJn=null;S.disconnect().connect();history.replaceState(null,'',location.pathname);sV('vL');}
+function leaveR(){if(curR)S.disconnect().connect();curR=null;isAd=false;isGh=false;myU=null;pJn=null;sV('vL');}
+function goL(){cM('jn');curR=null;isAd=false;isGh=false;myU=null;pJn=null;S.disconnect().connect();history.replaceState(null,'',location.pathname);sV('vL');}
 
 // ── Socket ──
 S.on('lobby',renL);
 S.on('message',m=>{appM(m);scrB();});
-S.on('deleteMsg',id=>{for(const e of $('cMsgs').children)if(e._mid===id){e.classList.add('msg-deleted');break;}});
+S.on('deleteMsg',id=>{for(const e of $('cMsgs').children)if(e._mid===id){e.classList.add('msg-del');break;}});
 S.on('clearChat',()=>{$('cMsgs').innerHTML='';});
 S.on('userlist',us=>{renU(us);updMC(us);});
 S.on('adminUserlist',us=>{renAU(us);const me=us.find(u=>u.email===myE);if(me)myU=me.username;});
@@ -561,7 +520,6 @@ S.on('settingsUpdated',s=>{$('cRn').textContent=s.roomName;if(isAd){$('adN').val
 S.on('kicked',()=>{$('mKk').classList.add('on');});
 S.on('roomClosed',d=>{$('clN').textContent='"'+d.name+'" has been closed.';$('mCl').classList.add('on');});
 
-// Close modals on overlay
 document.querySelectorAll('.mov').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o&&o.id!=='mKk'&&o.id!=='mCl'&&o.id!=='mCf')o.classList.remove('on');});});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.mov.on').forEach(m=>{if(m.id!=='mKk'&&m.id!=='mCl'&&m.id!=='mCf')m.classList.remove('on');});});
 
