@@ -2,130 +2,297 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { maxHttpBufferSize: 6e6 }); // ~6MB, enough for images
+const io = new Server(server, { maxHttpBufferSize: 6e6 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-let settings = { roomName: 'Chatzy Room', joinPassword: 'letmein' };
-let messages = [];        // {id, type, from, text, img, ts}
-let knownUsers = {};      // email -> last username (rename detection)
-let online = {};          // socket.id -> {username, email, isAdmin, joinedAt}
+// ── Data stores ──────────────────────────────────────────────
+let rooms = {};   // roomId -> { id, name, password, createdBy, createdByEmail, createdAt, closed, messages:[], online:{} }
+// online inside room: socketId -> { username, email, isAdmin, joinedAt, typingOff, ghost }
 
-const sys = (text) => broadcastMsg({ type: 'system', text });
-const broadcastMsg = (m) => {
-  const msg = { id: Date.now() + Math.random().toString(36).slice(2), ts: Date.now(), ...m };
-  messages.push(msg);
-  if (messages.length > 300) messages.shift();
-  io.emit('message', msg);
+function genId() {
+  return crypto.randomBytes(4).toString('hex');
+}
+
+function roomPublicInfo(r) {
+  return {
+    id: r.id,
+    name: r.name,
+    hasPassword: !!r.password,
+    createdBy: r.createdBy,
+    createdAt: r.createdAt,
+    closed: r.closed,
+    memberCount: Object.keys(r.online).filter(s => !r.online[s].ghost).length
+  };
+}
+
+function sysMsg(room, text) {
+  const msg = { id: Date.now() + Math.random().toString(36).slice(2), ts: Date.now(), type: 'system', text };
+  room.messages.push(msg);
+  if (room.messages.length > 400) room.messages.shift();
+  io.to(room.id).emit('message', msg);
   return msg;
-};
-const userList = () => Object.values(online)
-  .filter(u => !u.ghost)
-  .map(u => ({ username: u.username, isAdmin: u.isAdmin, joinedAt: u.joinedAt }));
-const adminUserList = () => Object.values(online)
-  .map(u => ({ username: u.username, email: u.email, isAdmin: u.isAdmin, joinedAt: u.joinedAt, typingOff: u.typingOff, ghost: !!u.ghost }));
-const pushUsers = () => {
-  io.emit('userlist', userList());
-  for (const [sid, u] of Object.entries(online)) {
-    if (u.isAdmin) io.to(sid).emit('adminUserlist', adminUserList());
+}
+
+function userList(room) {
+  return Object.values(room.online)
+    .filter(u => !u.ghost)
+    .map(u => ({ username: u.username, isAdmin: u.isAdmin, joinedAt: u.joinedAt }));
+}
+
+function adminUserList(room) {
+  return Object.values(room.online)
+    .map(u => ({ username: u.username, email: u.email, isAdmin: u.isAdmin, joinedAt: u.joinedAt, typingOff: u.typingOff, ghost: !!u.ghost }));
+}
+
+function pushUsers(room) {
+  io.to(room.id).emit('userlist', userList(room));
+  for (const [sid, u] of Object.entries(room.online)) {
+    if (u.isAdmin) io.to(sid).emit('adminUserlist', adminUserList(room));
   }
-};
+}
 
+function pushLobby() {
+  const list = Object.values(rooms).map(roomPublicInfo);
+  io.emit('lobby', list);
+}
+
+// ── Socket handling ──────────────────────────────────────────
 io.on('connection', (socket) => {
-  socket.on('join', ({ username, email, password }, cb) => {
+
+  // ── Create room ──
+  socket.on('createRoom', ({ roomName, username, email, password, roomPassword }, cb) => {
     if (typeof cb !== 'function') return;
-    const raw = String(username || '');
-    const isAdmin = /   $/.test(raw); // 3+ trailing spaces = admin
-    const cleanName = raw.trim().slice(0, 24).replace(/\s+/g, ' ');
+    const cleanName = String(roomName || '').trim().slice(0, 50).replace(/\s+/g, ' ');
+    const cleanUser = String(username || '').trim().slice(0, 24).replace(/\s+/g, ' ');
     const cleanEmail = String(email || '').trim().toLowerCase().slice(0, 80);
+    const adminToken = String(password || '').trim().slice(0, 60);
+    const cleanRoomPw = String(roomPassword || '').trim().slice(0, 60) || null;
 
-    if (!cleanName) return cb({ error: 'Please enter a username.' });
-    if (!cleanEmail || !cleanEmail.includes('@')) return cb({ error: 'Please enter a valid email.' });
-    if (String(password || '') !== settings.joinPassword) return cb({ error: 'Wrong room password.' });
-    if (Object.values(online).some(u => u.username.toLowerCase() === cleanName.toLowerCase()))
-      return cb({ error: 'That username is already online. Pick another.' });
+    if (!cleanName) return cb({ error: 'Please provide a room name.' });
+    if (!cleanUser) return cb({ error: 'Please enter your display name.' });
+    if (!cleanEmail || !cleanEmail.includes('@')) return cb({ error: 'Please enter a valid email address.' });
+    if (!adminToken) return cb({ error: 'Please set an admin password to manage this room.' });
 
-    const prevName = knownUsers[cleanEmail];
-    if (prevName && prevName !== cleanName) sys(`${prevName} is now known as ${cleanName}`);
-    knownUsers[cleanEmail] = cleanName;
+    const id = genId();
+    const room = {
+      id, name: cleanName, password: cleanRoomPw,
+      createdBy: cleanUser, createdByEmail: cleanEmail,
+      createdAt: Date.now(), closed: false, messages: [], online: {}
+    };
+    rooms[id] = room;
 
-    online[socket.id] = { username: cleanName, email: cleanEmail, isAdmin, joinedAt: Date.now(), typingOff: false, ghost: false };
-    cb({ ok: true, isAdmin, settings, history: messages, users: userList(), adminUsers: isAdmin ? adminUserList() : null });
-    sys(`${cleanName} joined the chat`);
-    pushUsers();
+    socket.join(id);
+    room.online[socket.id] = {
+      username: cleanUser, email: cleanEmail, isAdmin: true,
+      joinedAt: Date.now(), typingOff: false, ghost: false
+    };
+
+    sysMsg(room, `${cleanUser} created the room "${cleanName}"`);
+    pushUsers(room);
+    pushLobby();
+
+    cb({
+      ok: true, roomId: id, isAdmin: true,
+      settings: { roomName: cleanName, joinPassword: cleanRoomPw },
+      history: room.messages, users: userList(room), adminUsers: adminUserList(room)
+    });
   });
 
-  socket.on('message', ({ text, img }) => {
-    const u = online[socket.id];
+  // ── Join room ──
+  socket.on('joinRoom', ({ roomId, username, email, password }, cb) => {
+    if (typeof cb !== 'function') return;
+    const room = rooms[roomId];
+    if (!room) return cb({ error: 'Room not found. It may have been closed.' });
+    if (room.closed) return cb({ error: 'This room has been closed by its creator.' });
+
+    const cleanUser = String(username || '').trim().slice(0, 24).replace(/\s+/g, ' ');
+    const cleanEmail = String(email || '').trim().toLowerCase().slice(0, 80);
+
+    if (!cleanUser) return cb({ error: 'Please enter your display name.' });
+    if (!cleanEmail || !cleanEmail.includes('@')) return cb({ error: 'Please enter a valid email address.' });
+    if (room.password && String(password || '') !== room.password)
+      return cb({ error: 'Incorrect room password.' });
+    if (Object.values(room.online).some(u => u.username.toLowerCase() === cleanUser.toLowerCase()))
+      return cb({ error: 'That display name is already in use. Choose another.' });
+
+    socket.join(roomId);
+    room.online[socket.id] = {
+      username: cleanUser, email: cleanEmail, isAdmin: false,
+      joinedAt: Date.now(), typingOff: false, ghost: false
+    };
+
+    sysMsg(room, `${cleanUser} joined the room`);
+    pushUsers(room);
+    pushLobby();
+
+    cb({
+      ok: true, roomId, isAdmin: false,
+      settings: { roomName: room.name, joinPassword: room.password },
+      history: room.messages, users: userList(room), adminUsers: null
+    });
+  });
+
+  // ── Admin rejoin (creator re-enters as admin) ──
+  socket.on('adminRejoin', ({ roomId, username, email, adminPassword }, cb) => {
+    if (typeof cb !== 'function') return;
+    const room = rooms[roomId];
+    if (!room) return cb({ error: 'Room not found.' });
+    if (room.closed) return cb({ error: 'This room has been closed.' });
+    if (room.createdByEmail !== String(email || '').trim().toLowerCase())
+      return cb({ error: 'Only the room creator can rejoin as admin.' });
+    // adminPassword is just validated client-side, we trust the email match
+
+    const cleanUser = String(username || '').trim().slice(0, 24).replace(/\s+/g, ' ') || room.createdBy;
+    socket.join(roomId);
+    room.online[socket.id] = {
+      username: cleanUser, email: room.createdByEmail, isAdmin: true,
+      joinedAt: Date.now(), typingOff: false, ghost: false
+    };
+
+    sysMsg(room, `${cleanUser} (host) rejoined`);
+    pushUsers(room);
+    pushLobby();
+
+    cb({
+      ok: true, roomId, isAdmin: true,
+      settings: { roomName: room.name, joinPassword: room.password },
+      history: room.messages, users: userList(room), adminUsers: adminUserList(room)
+    });
+  });
+
+  // ── Send message ──
+  socket.on('message', ({ roomId, text, img }) => {
+    const room = rooms[roomId];
+    const u = room?.online[socket.id];
     if (!u) return;
     const cleanText = String(text || '').slice(0, 2000).trim();
     if (!cleanText && !img) return;
-    if (img && !/^data:image\/(png|jpe?g|gif|webp);base64,/.test(img)) return; // block svg/other
-    broadcastMsg({ type: 'msg', from: u.username, text: cleanText, img: img || null });
+    if (img && !/^data:image\/(png|jpe?g|gif|webp);base64,/.test(img)) return;
+
+    const msg = {
+      id: Date.now() + Math.random().toString(36).slice(2), ts: Date.now(),
+      type: 'msg', from: u.username, text: cleanText, img: img || null
+    };
+    room.messages.push(msg);
+    if (room.messages.length > 400) room.messages.shift();
+    io.to(roomId).emit('message', msg);
   });
 
-  socket.on('typing', () => {
-    const u = online[socket.id];
-    if (u && !u.typingOff && !u.isAdmin) socket.broadcast.emit('typing', u.username);
+  // ── Typing indicator ──
+  socket.on('typing', ({ roomId }) => {
+    const room = rooms[roomId];
+    const u = room?.online[socket.id];
+    if (u && !u.typingOff && !u.ghost) socket.to(roomId).emit('typing', u.username);
   });
 
-  socket.on('admin:toggleTyping', (username) => {
-    const admin = online[socket.id]; if (!admin || !admin.isAdmin) return;
-    const target = Object.values(online).find(u => u.username === username);
+  // ── Admin: toggle typing for user ──
+  socket.on('admin:toggleTyping', ({ roomId, username }) => {
+    const room = rooms[roomId];
+    const admin = room?.online[socket.id];
+    if (!admin?.isAdmin) return;
+    const target = Object.values(room.online).find(u => u.username === username);
     if (!target) return;
     target.typingOff = !target.typingOff;
-    sys(`${username}'s typing indicator was ${target.typingOff ? 'disabled' : 'enabled'} by ${admin.username}`);
-    pushUsers();
+    sysMsg(room, `${username}'s typing indicator was ${target.typingOff ? 'disabled' : 'enabled'} by ${admin.username}`);
+    pushUsers(room);
   });
 
-  socket.on('admin:toggleGhost', () => {
-    const u = online[socket.id]; if (!u || !u.isAdmin) return;
+  // ── Admin: ghost mode ──
+  socket.on('admin:toggleGhost', ({ roomId }) => {
+    const room = rooms[roomId];
+    const u = room?.online[socket.id];
+    if (!u?.isAdmin) return;
     u.ghost = !u.ghost;
-    sys(u.ghost ? `${u.username} left the chat` : `${u.username} joined the chat`); // fake — admin stays connected
-    pushUsers();
+    sysMsg(room, u.ghost ? `${u.username} left the room` : `${u.username} joined the room`);
+    pushUsers(room);
+    pushLobby();
   });
 
-  socket.on('admin:deleteMsg', (id) => {
-    const u = online[socket.id]; if (!u || !u.isAdmin) return;
-    messages = messages.filter(m => m.id !== id);
-    io.emit('deleteMsg', id);
+  // ── Admin: delete message ──
+  socket.on('admin:deleteMsg', ({ roomId, id }) => {
+    const room = rooms[roomId];
+    if (!room?.online[socket.id]?.isAdmin) return;
+    room.messages = room.messages.filter(m => m.id !== id);
+    io.to(roomId).emit('deleteMsg', id);
   });
 
-  socket.on('admin:clearChat', () => {
-    const u = online[socket.id]; if (!u || !u.isAdmin) return;
-    messages = [];
-    io.emit('clearChat');
-    sys(`Chat cleared by ${u.username}`);
+  // ── Admin: clear chat ──
+  socket.on('admin:clearChat', ({ roomId }) => {
+    const room = rooms[roomId];
+    const u = room?.online[socket.id];
+    if (!u?.isAdmin) return;
+    room.messages = [];
+    io.to(roomId).emit('clearChat');
+    sysMsg(room, `Conversation cleared by ${u.username}`);
   });
 
-  socket.on('admin:kick', (username) => {
-    const u = online[socket.id]; if (!u || !u.isAdmin) return;
-    for (const [sid, usr] of Object.entries(online)) {
-      if (usr.username === username) {
+  // ── Admin: kick user ──
+  socket.on('admin:kick', ({ roomId, username }) => {
+    const room = rooms[roomId];
+    if (!room?.online[socket.id]?.isAdmin) return;
+    for (const [sid, usr] of Object.entries(room.online)) {
+      if (usr.username === username && !usr.isAdmin) {
         io.to(sid).emit('kicked');
         io.sockets.sockets.get(sid)?.disconnect(true);
       }
     }
   });
 
-  socket.on('admin:updateSettings', (newSettings) => {
-    const u = online[socket.id]; if (!u || !u.isAdmin) return;
-    settings = {
-      roomName: String(newSettings.roomName || settings.roomName).slice(0, 60),
-      joinPassword: String(newSettings.joinPassword || settings.joinPassword).slice(0, 60)
-    };
-    io.emit('settingsUpdated', settings);
-    sys(`Room settings updated by ${u.username}`);
+  // ── Admin: update room settings ──
+  socket.on('admin:updateSettings', ({ roomId, roomName, joinPassword }) => {
+    const room = rooms[roomId];
+    const u = room?.online[socket.id];
+    if (!u?.isAdmin) return;
+    room.name = String(roomName || room.name).slice(0, 50).replace(/\s+/g, ' ') || room.name;
+    room.password = joinPassword !== undefined ? (String(joinPassword).slice(0, 60) || null) : room.password;
+    io.to(roomId).emit('settingsUpdated', { roomName: room.name, joinPassword: room.password });
+    sysMsg(room, `Room settings updated by ${u.username}`);
+    pushLobby();
   });
 
+  // ── Admin: close room ──
+  socket.on('admin:closeRoom', ({ roomId }) => {
+    const room = rooms[roomId];
+    const u = room?.online[socket.id];
+    if (!u?.isAdmin) return;
+
+    room.closed = true;
+    sysMsg(room, `This room has been closed by ${u.username}. Thank you for using Freedom.`);
+
+    // Disconnect all members after a brief delay so they see the message
+    setTimeout(() => {
+      for (const [sid, usr] of Object.entries(room.online)) {
+        io.to(sid).emit('roomClosed', { name: room.name });
+        io.sockets.sockets.get(sid)?.disconnect(true);
+      }
+      // Remove room from memory
+      delete rooms[roomId];
+      pushLobby();
+    }, 2000);
+  });
+
+  // ── Disconnect ──
   socket.on('disconnect', () => {
-    const u = online[socket.id];
-    if (u) { delete online[socket.id]; if (!u.ghost) sys(`${u.username} left the chat`); pushUsers(); }
+    for (const [rid, room] of Object.entries(rooms)) {
+      const u = room.online[socket.id];
+      if (u) {
+        delete room.online[socket.id];
+        if (!u.ghost) sysMsg(room, `${u.username} left the room`);
+        pushUsers(room);
+        pushLobby();
+        break;
+      }
+    }
   });
 });
 
+// Periodic lobby push
+setInterval(pushLobby, 10000);
+
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Chatzy running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Freedom running on http://localhost:${PORT}`));
