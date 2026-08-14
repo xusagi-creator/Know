@@ -2,365 +2,257 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#070f0c">
 <title>Freedom</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#090d0b;--bg2:#101815;--bg3:#182320;
-  --brd:#1c2e25;--brd2:#264034;
-  --fg:#e2ebe6;--fg2:#8fa89c;--fg3:#556e62;
-  --grn:#22c55e;--grn2:#16a34a;--grnBg:rgba(34,197,94,.08);--grnBdr:rgba(34,197,94,.18);
-  --red:#ef4444;--redBg:rgba(239,68,68,.08);--redBdr:rgba(239,68,68,.2);
-  --amb:#f59e0b;--ambBg:rgba(245,158,11,.08);
-  --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+  --bg:#070f0c;--bg2:#0d1815;--bg3:#15221c;
+  --brd:#1c2e26;--brd2:#274539;
+  --fg:#eaf3ee;--fg2:#8ea99c;--fg3:#4c6459;
+  --green:#2fe08a;--green2:#20b96f;--greenBg:rgba(47,224,138,.1);--greenGlow:rgba(47,224,138,.35);
+  --red:#ff5470;--redBg:rgba(255,84,112,.1);
+  --amber:#f5a623;--amberBg:rgba(245,166,35,.1);
+  --f-disp:'Space Grotesk',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',monospace;
 }
-html,body{height:100%;overflow:hidden}
-body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg)}
+body{font-family:var(--f-body);background:var(--bg);color:var(--fg);height:100vh;height:100dvh;overflow:hidden}
+h1,h2,h3{font-family:var(--f-disp)}
+::selection{background:var(--greenBg);color:var(--fg)}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:4px}
+.ipt:focus-visible,.inp-bar textarea:focus-visible{outline:none}
 
-/* ─── Views ─── */
-.v{display:none;position:absolute;inset:0}.v.on{display:flex}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(560px circle at 12% -8%, rgba(47,224,138,.10), transparent 60%),
+    radial-gradient(480px circle at 105% 108%, rgba(47,224,138,.06), transparent 60%),
+    radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:auto,auto,24px 24px;
+}
+.view{display:none;height:100%;height:100dvh;position:relative;z-index:1}.view.on{display:flex}
 
-/* ─── Inputs ─── */
-.ipt{
-  width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--fg);
-  padding:11px 14px;border-radius:10px;font-size:14px;font-family:inherit;
-  outline:none;transition:border-color .15s;-webkit-appearance:none;
-}
-.ipt::placeholder{color:var(--fg3)}
-.ipt:focus{border-color:var(--grn)}
-textarea.ipt{resize:none;line-height:1.45}
+.ipt{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--fg);padding:11px 14px;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border .2s,box-shadow .2s}
+.ipt::placeholder{color:var(--fg3)}.ipt:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(47,224,138,.12)}
 
-/* ─── Buttons ─── */
-.bp{
-  background:var(--grn);color:#000;font-weight:600;padding:11px 20px;border-radius:10px;
-  border:none;cursor:pointer;font-size:14px;font-family:inherit;
-  transition:all .12s;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  -webkit-tap-highlight-color:transparent;
-}
-.bp:hover{background:var(--grn2)}.bp:active{transform:scale(.97)}
-.bp:disabled{opacity:.35;cursor:default;transform:none}
-.bs{
-  background:var(--bg3);color:var(--fg);font-weight:500;padding:11px 20px;border-radius:10px;
-  border:1px solid var(--brd);cursor:pointer;font-size:14px;font-family:inherit;
-  transition:all .12s;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  -webkit-tap-highlight-color:transparent;
-}
-.bs:hover{border-color:var(--brd2)}
-.bd{
-  background:var(--redBg);color:var(--red);font-weight:600;padding:9px 16px;border-radius:9px;
-  border:1px solid var(--redBdr);cursor:pointer;font-size:13px;font-family:inherit;
-  transition:all .12s;display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  -webkit-tap-highlight-color:transparent;
-}
-.bd:hover{background:rgba(239,68,68,.14)}
-.bi{
-  background:none;border:none;color:var(--fg3);width:36px;height:36px;border-radius:8px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;
-  flex-shrink:0;-webkit-tap-highlight-color:transparent;
-}
+.bp{background:var(--green);color:#000;font-weight:600;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.bp:hover{background:var(--green2);box-shadow:0 6px 20px rgba(47,224,138,.22)}.bp:active{transform:scale(.97)}.bp:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+.bs{background:var(--bg3);color:var(--fg);font-weight:500;padding:11px 20px;border-radius:10px;border:1px solid var(--brd);cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.bs:hover{background:var(--brd2)}
+.bd{background:var(--redBg);color:var(--red);font-weight:600;padding:9px 16px;border-radius:9px;border:1px solid rgba(255,84,112,.2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.bd:hover{background:rgba(255,84,112,.18)}
+.bi{background:none;border:none;color:var(--fg3);width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
 .bi:hover{background:var(--bg3);color:var(--fg)}
 
-/* ─── Scrollbar ─── */
-.scrl::-webkit-scrollbar{width:4px}
-.scrl::-webkit-scrollbar-track{background:transparent}
-.scrl::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
+.scr::-webkit-scrollbar{width:5px}.scr::-webkit-scrollbar-track{background:transparent}.scr::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
 
-/* ═══════════ LOBBY ═══════════ */
-#vL{
-  flex-direction:column;align-items:center;justify-content:center;
-  padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;
-}
-.li{width:100%;max-width:520px}
-.rr{
-  display:flex;align-items:center;gap:12px;padding:14px 16px;
-  background:var(--bg2);border:1px solid var(--brd);border-radius:12px;
-  cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent;
-}
-.rr:hover{border-color:var(--brd2);background:var(--bg3)}
-.rr:active{transform:scale(.99)}
-.rc{
-  font-family:'Inter',monospace;font-weight:700;letter-spacing:1.5px;font-size:11px;
-  color:var(--grn);background:var(--grnBg);border:1px solid var(--grnBdr);
-  padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .12s;white-space:nowrap;
-}
-.rc:hover{background:rgba(34,197,94,.15)}
+.logo-mark{width:42px;height:42px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:12px;display:flex;align-items:center;justify-content:center;animation:logoGlow 2.6s ease-in-out infinite}
+@keyframes logoGlow{0%,100%{box-shadow:0 0 0 0 rgba(47,224,138,.35)}50%{box-shadow:0 0 0 10px rgba(47,224,138,0)}}
 
-/* ═══════════ ALLOW ═══════════ */
-#vA{flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.ac{
-  background:var(--bg2);border:1px solid var(--brd);border-radius:16px;
-  padding:36px 28px;max-width:380px;width:100%;text-align:center;
-}
-.ab{
-  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;
-  padding:4px 10px;border-radius:6px;
-}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--green);position:relative;flex-shrink:0}
+.pulse-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--green);opacity:.6;animation:pulseRing 1.8s ease-out infinite}
+.pulse-dot.warn{background:var(--amber)}.pulse-dot.warn::after{border-color:var(--amber);animation-duration:.9s}
+.pulse-dot.off{background:var(--red)}.pulse-dot.off::after{border-color:var(--red);animation:none;opacity:0}
+@keyframes pulseRing{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.9);opacity:0}}
 
-/* ═══════════ CHAT ═══════════ */
-#vC{flex-direction:column}
-.ch{
-  background:var(--bg2);border-bottom:1px solid var(--brd);
-  padding:10px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;
-  padding-top:calc(10px + var(--safe-t));
-}
-.cb{flex:1;display:flex;overflow:hidden;position:relative}
-.cm{
-  flex:1;overflow-y:auto;padding:12px 14px 8px;
-  display:flex;flex-direction:column;gap:3px;
-  -webkit-overflow-scrolling:touch;
-}
-.ci{
-  background:var(--bg2);border-top:1px solid var(--brd);
-  padding:8px 12px;padding-bottom:calc(8px + var(--safe-b));flex-shrink:0;
-}
+.lobby{flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.lobby-in{width:100%;max-width:560px}
+.room-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;cursor:pointer;transition:all .15s}
+.room-row:hover{border-color:var(--brd2);background:var(--bg3);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.rr-name{font-family:var(--f-disp);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcode{font-family:var(--f-mono);font-weight:700;letter-spacing:2px;font-size:12px;color:var(--green);background:var(--greenBg);padding:3px 8px;border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.rcode:hover{background:rgba(47,224,138,.18)}
 
-/* ─── Messages ─── */
-.m{max-width:70%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-wrap:break-word;overflow-wrap:break-word}
-.m.o{background:var(--bg3);align-self:flex-start;border-bottom-left-radius:4px}
-.m.s{background:var(--grnBg);border:1px solid var(--grnBdr);align-self:flex-end;border-bottom-right-radius:4px}
-.m.y{background:none;color:var(--fg3);font-size:12px;align-self:center;padding:3px 0;max-width:90%}
-.m img{max-width:240px;max-height:240px;border-radius:10px;margin-top:6px;display:block}
-.mn{font-size:11px;font-weight:600;color:var(--grn);margin-bottom:2px}
-.mt{font-size:10px;color:var(--fg3);margin-top:2px;text-align:right}
-.m.x{opacity:.15;text-decoration:line-through;pointer-events:none}
+.allow{flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.allow-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:40px 32px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.abdg{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px}
 
-/* ─── Typing ─── */
-.ty{font-size:11px;color:var(--fg3);padding:2px 4px;height:18px;display:flex;align-items:center;gap:4px}
-.td{width:3px;height:3px;background:var(--fg3);border-radius:50%;animation:tb 1.4s infinite}
-.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+.chat{flex-direction:column;height:100%;height:100dvh}
+.chdr{background:var(--bg2);border-bottom:1px solid var(--brd);padding:12px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;padding-top:max(12px,env(safe-area-inset-top))}
+#cRn{font-family:var(--f-disp);font-weight:600}
+.cbody{flex:1;display:flex;overflow:hidden;position:relative}
+.cmsgs-wrap{flex:1;position:relative;display:flex;overflow:hidden;min-width:0}
+.cmsgs{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cinp{background:var(--bg2);border-top:1px solid var(--brd);padding:10px 12px;flex-shrink:0;padding-bottom:max(10px,env(safe-area-inset-bottom))}
 
-/* ─── Input bar ─── */
-.ib{display:flex;align-items:flex-end;gap:6px}
-.ib textarea{
-  flex:1;background:var(--bg);border:1px solid var(--brd);color:var(--fg);
-  padding:10px 14px;border-radius:22px;font-size:14px;font-family:inherit;
-  outline:none;resize:none;max-height:100px;line-height:1.4;transition:border-color .15s;
-  -webkit-appearance:none;
-}
-.ib textarea::placeholder{color:var(--fg3)}
-.ib textarea:focus{border-color:var(--grn)}
-.sb-btn{
-  width:36px;height:36px;border-radius:50%;background:var(--grn);border:none;
-  color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;flex-shrink:0;opacity:0;transform:scale(.6);pointer-events:none;
-}
-.sb-btn.v{opacity:1;transform:scale(1);pointer-events:auto}
-.sb-btn:hover{background:var(--grn2)}.sb-btn:active{transform:scale(.88)}
+.jump-btn{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;background:var(--bg3);border:1px solid var(--brd2);color:var(--fg);font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;display:none;align-items:center;gap:7px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:5;animation:fi .2s ease-out}
+.jump-btn:hover{background:var(--brd2)}
+.jb-n{background:var(--green);color:#000;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;min-width:14px;text-align:center}
 
-/* ─── Sidebar ─── */
-.sb{
-  width:260px;background:var(--bg2);border-left:1px solid var(--brd);
-  display:flex;flex-direction:column;flex-shrink:0;
-  transition:transform .2s ease;
-}
+.msg{max-width:72%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-wrap:break-word;position:relative;animation:msgIn .18s ease-out}
+.msg.o{background:var(--bg3);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.s{background:var(--greenBg);border:1px solid rgba(47,224,138,.15);align-self:flex-end;border-bottom-right-radius:4px}
+.msg.sy{background:none;color:var(--fg3);font-size:12px;align-self:center;padding:4px 0;max-width:90%}
+.msg img{max-width:min(260px,100%);max-height:260px;border-radius:10px;margin-top:6px;display:block}
+.msg-n{font-size:11px;font-weight:600;color:var(--green);margin-bottom:2px}
+.msg-t{font-size:10px;color:var(--fg3);margin-top:3px;text-align:right}
+.msg-del{opacity:.2;text-decoration:line-through;pointer-events:none}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.typ{font-size:12px;color:var(--fg3);padding:2px 16px 6px;height:20px;display:flex;align-items:center;gap:5px}
+.typ-d{width:4px;height:4px;background:var(--fg3);border-radius:50%;animation:tb 1.4s infinite}
+.typ-d:nth-child(2){animation-delay:.15s}.typ-d:nth-child(3){animation-delay:.3s}
+
+.inp-bar{display:flex;align-items:flex-end;gap:6px}
+.inp-bar textarea{flex:1;background:var(--bg);border:1px solid var(--brd);color:var(--fg);padding:10px 14px;border-radius:20px;font-size:14px;font-family:inherit;outline:none;resize:none;max-height:100px;line-height:1.4;transition:border .2s,box-shadow .2s}
+.inp-bar textarea::placeholder{color:var(--fg3)}
+.inp-bar textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(47,224,138,.12)}
+.send-btn{width:38px;height:38px;border-radius:50%;background:var(--green);border:none;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;opacity:0;transform:scale(.7);pointer-events:none}
+.send-btn.vis{opacity:1;transform:scale(1);pointer-events:auto}
+.send-btn:hover{background:var(--green2)}.send-btn:active{transform:scale(.9)}
+
+.sb{width:260px;background:var(--bg2);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
 .sb-h{padding:14px 16px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:600;color:var(--fg2)}
-.sb-b{flex:1;overflow-y:auto;padding:6px;-webkit-overflow-scrolling:touch}
-.ur{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;transition:background .1s}
-.ur:hover{background:var(--bg3)}
-.ua{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;color:#fff}
+.sb-b{flex:1;overflow-y:auto;padding:8px}
+.ub{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;transition:background .12s}
+.ub:hover{background:var(--bg3)}
+.uav{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#fff;box-shadow:0 0 0 2px var(--bg2),0 0 0 3px var(--brd2)}
+.sb-bk{display:none}
 
-/* ─── Sidebar overlay (mobile) ─── */
-.sb-ov{
-  position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:40;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
-.sb-ov.on{opacity:1;pointer-events:auto}
-
-/* ─── Modals ─── */
-.mov{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;
-  display:none;align-items:center;justify-content:center;padding:16px;
-  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
-}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);padding:16px}
 .mov.on{display:flex}
-.mdl{
-  background:var(--bg2);border:1px solid var(--brd);border-radius:16px;
-  padding:22px;width:100%;max-width:400px;
-  animation:mIn .2s ease-out;max-height:85vh;overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-}
-.mdl.lg{max-width:480px}
+.mdl{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:24px;width:92%;max-width:420px;max-height:calc(100dvh - 32px);overflow-y:auto;animation:mIn .2s ease-out;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.mdl-lg{max-width:500px}
 
-/* ─── Toast ─── */
-.tc{
-  position:fixed;top:calc(12px + var(--safe-t));left:12px;right:12px;z-index:200;
-  display:flex;flex-direction:column;gap:6px;pointer-events:none;
-}
-@media(min-width:480px){.tc{left:auto;right:16px;width:auto;max-width:340px}}
-.ts{
-  background:var(--bg3);border:1px solid var(--brd);color:var(--fg);
-  padding:10px 14px;border-radius:10px;font-size:13px;pointer-events:auto;
-  animation:tIn .2s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.5);
-  display:flex;align-items:center;gap:8px;
-}
-.ts.e{border-color:var(--redBdr);color:var(--red)}
-.ts.s{border-color:var(--grnBdr);color:var(--grn)}
+.tc{position:fixed;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:200;display:flex;flex-direction:column;gap:6px;max-width:calc(100vw - 32px)}
+.tst{background:var(--bg3);border:1px solid var(--brd);color:var(--fg);padding:10px 16px;border-radius:10px;font-size:13px;animation:tIn .25s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px}
+.tst.e{border-color:rgba(255,84,112,.3);color:var(--red)}.tst.s{border-color:rgba(47,224,138,.3);color:var(--green)}
 
-/* ─── Checkbox ─── */
-.ck{
-  display:flex;align-items:flex-start;gap:10px;cursor:pointer;
-  padding:11px 12px;background:var(--bg);border:1px solid var(--brd);
-  border-radius:10px;transition:border-color .12s;user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
-.ck:hover{border-color:var(--brd2)}
-.ck input{display:none}
-.ckb{
-  width:18px;height:18px;border-radius:5px;border:2px solid var(--brd2);
-  display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;margin-top:1px;
-}
-.ck input:checked~.ckb{background:var(--grn);border-color:var(--grn)}
-.ckb i{font-size:9px;color:#000;opacity:0;transition:opacity .1s}
-.ck input:checked~.ckb i{opacity:1}
+.ckr{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:11px 13px;background:var(--bg);border:1px solid var(--brd);border-radius:10px;transition:all .15s;user-select:none}
+.ckr:hover{border-color:var(--brd2)}.ckr input{display:none}
+.ckb{width:18px;height:18px;border-radius:5px;border:2px solid var(--brd2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;margin-top:1px}
+.ckr input:checked~.ckb{background:var(--green);border-color:var(--green)}
+.ckb i{font-size:9px;color:#000;opacity:0;transition:opacity .1s}.ckr input:checked~.ckb i{opacity:1}
 
-/* ─── Password toggle ─── */
-.pw{position:relative}
-.pt{
-  position:absolute;right:10px;top:50%;transform:translateY(-50%);
-  background:none;border:none;color:var(--fg3);cursor:pointer;font-size:13px;padding:4px;
-}
+.pww{position:relative}.pwt{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--fg3);cursor:pointer;font-size:13px}
 
-/* ─── Image preview ─── */
-.ip{
-  display:flex;align-items:center;gap:8px;padding:8px 10px;
-  background:var(--bg3);border-radius:10px;margin-bottom:6px;
-}
-.ip img{height:36px;border-radius:6px}
+.imp{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:10px;margin-bottom:6px}
+.imp img{height:40px;border-radius:6px}
 
-/* ─── Capture overlay ─── */
-#capOv{
-  position:fixed;inset:0;z-index:90;background:var(--bg);
-  display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;
-}
-#capOv.on{display:flex}
-.cs{width:32px;height:32px;border:3px solid var(--brd);border-top-color:var(--grn);border-radius:50%;animation:sp .7s linear infinite}
-
-/* ─── Animations ─── */
 @keyframes mIn{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:none}}
-@keyframes tIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 @keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
-@keyframes sp{to{transform:rotate(360deg)}}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 
-/* ═══════════ RESPONSIVE ═══════════ */
+@media(min-width:641px) and (max-width:1000px){ .sb{width:210px} }
+
 @media(max-width:640px){
-  .m{max-width:85%}
-  .li{max-width:100%}
-  .ac{padding:28px 20px}
-  .mdl{padding:18px;border-radius:14px}
-  .ch{padding:8px 10px;padding-top:calc(8px + var(--safe-t))}
-  .cm{padding:10px}
-  .ci{padding:6px 10px;padding-bottom:calc(6px + var(--safe-b))}
-  .ib textarea{padding:9px 12px;font-size:16px} /* prevent zoom on iOS */
-  .sb{
-    position:fixed;right:0;top:0;bottom:0;z-index:45;
-    transform:translateX(100%);box-shadow:-4px 0 20px rgba(0,0,0,.3);
-  }
+  .sb{position:fixed;right:0;top:0;bottom:0;width:80vw;max-width:300px;z-index:50;transform:translateX(100%);transition:transform .25s;padding-bottom:env(safe-area-inset-bottom)}
   .sb.on{transform:translateX(0)}
+  .sb-bk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:49}
+  .sb-bk.on{display:block}
+  .msg{max-width:85%}
+  .lobby-in{max-width:100%}
+  .chdr{padding:10px 12px;gap:5px}
+  .chdr .bi{width:32px;height:32px}
+  #cRn{font-size:13px}
+  .ipt,.inp-bar textarea{font-size:16px}
 }
-
-@media(min-width:641px){
-  .sb-ov{display:none !important}
+@media(max-width:380px){
+  .mdl{padding:18px}
+  .allow-card{padding:28px 20px}
 }
-
-@media(min-width:1024px){
-  .li{max-width:560px}
-  .m{max-width:65%}
-  .sb{width:280px}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
 }
 </style>
 </head>
 <body>
 
 <div class="tc" id="tc"></div>
-<div id="capOv"><div class="cs"></div><p style="color:var(--fg2);font-size:13px">Verifying...</p></div>
 
 <!-- ═══════ LOBBY ═══════ -->
-<div id="vL" class="v on" style="animation:fi .35s">
-  <div class="li">
-    <div style="text-align:center;margin-bottom:28px;padding-top:8px">
-      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:36px;height:36px;background:var(--grn);border-radius:10px;display:flex;align-items:center;justify-content:center">
-          <i class="fa-solid fa-comments" style="color:#000;font-size:15px"></i>
-        </div>
-        <h1 style="font-size:22px;font-weight:700;letter-spacing:-.3px">Freedom</h1>
+<div id="vL" class="view on lobby" style="animation:fi .4s">
+  <div class="lobby-in">
+    <div style="text-align:center;margin-bottom:32px;position:relative">
+      <button class="bi" id="sndTglL" onclick="toggleSound()" title="Mute sounds" style="position:absolute;top:-4px;right:-4px"><i class="fa-solid fa-volume-high" id="sndIconL" style="font-size:13px"></i></button>
+      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="logo-mark"><i class="fa-solid fa-comments" style="color:#000;font-size:17px"></i></div>
+        <h1 style="font-size:24px;font-weight:700;letter-spacing:-.5px">Freedom</h1>
       </div>
-      <p style="color:var(--fg2);font-size:13px;line-height:1.4">Create a room, share the link, close it when done.</p>
+      <p style="color:var(--fg2);font-size:13px">Create a room, share the link, close it when done.</p>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:24px">
-      <button class="bp" style="flex:1" onclick="oM('cr')"><i class="fa-solid fa-plus" style="font-size:11px"></i> Create</button>
-      <button class="bs" style="flex:1" onclick="oM('jn')"><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:11px"></i> Join</button>
+    <div style="display:flex;gap:8px;margin-bottom:28px">
+      <button class="bp" style="flex:1;justify-content:center" onclick="oM('cr')"><i class="fa-solid fa-plus" style="font-size:12px"></i> Create Room</button>
+      <button class="bs" style="flex:1;justify-content:center" onclick="oM('jn')"><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:12px"></i> Join Room</button>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <span style="font-size:10px;font-weight:600;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px">Active Rooms</span>
-      <span id="rCnt" style="font-size:10px;color:var(--fg3);background:var(--bg3);padding:1px 6px;border-radius:4px">0</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:11px;font-weight:600;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px">Active Rooms</span>
+      <span id="rCnt" style="font-size:11px;color:var(--fg3);background:var(--bg3);padding:1px 7px;border-radius:5px">0</span>
     </div>
-    <div id="rList" style="display:flex;flex-direction:column;gap:6px;padding-bottom:20px">
-      <div style="text-align:center;padding:36px 0;color:var(--fg3);font-size:13px">
-        <i class="fa-regular fa-comments" style="font-size:22px;display:block;margin-bottom:8px;opacity:.3"></i>No active rooms
+    <div id="rList" style="display:flex;flex-direction:column;gap:6px">
+      <div style="text-align:center;padding:40px 0;color:var(--fg3);font-size:13px">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size:20px;display:block;margin-bottom:8px;opacity:.5"></i>
+        Loading rooms&hellip;
       </div>
     </div>
   </div>
 </div>
 
 <!-- ═══════ ALLOW ═══════ -->
-<div id="vA" class="v" style="animation:fi .25s">
-  <div class="ac">
-    <div style="width:48px;height:48px;background:var(--grnBg);border:1px solid var(--grnBdr);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-      <i class="fa-solid fa-door-open" style="font-size:18px;color:var(--grn)"></i>
+<div id="vA" class="view allow" style="animation:fi .3s">
+  <div class="allow-card">
+    <div style="width:52px;height:52px;background:var(--greenBg);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="fa-solid fa-door-open" style="font-size:20px;color:var(--green)"></i>
     </div>
-    <p style="font-size:12px;color:var(--fg3);margin-bottom:2px">You're invited to join</p>
-    <h2 id="aN" style="font-size:18px;font-weight:700;margin-bottom:12px;word-break:break-word">Room</h2>
-    <div id="aB" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:14px"></div>
-    <div id="aR" style="text-align:left;margin-bottom:18px;font-size:12px;color:var(--fg2)"></div>
-    <button id="aBtn" class="bp" style="width:100%;padding:13px;font-size:15px" onclick="hAllow()">
+    <p style="font-size:13px;color:var(--fg3);margin-bottom:2px">You're invited to join</p>
+    <h2 id="aName" style="font-size:20px;font-weight:700;margin-bottom:14px">Room</h2>
+    <div id="aBdg" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:16px"></div>
+    <div id="aReq" style="text-align:left;margin-bottom:20px;font-size:12px;color:var(--fg2)"></div>
+    <button id="aBtn" class="bp" style="width:100%;justify-content:center;padding:13px;font-size:15px" onclick="handleAllow()">
       <i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join
     </button>
-    <button class="bs" style="width:100%;margin-top:8px" onclick="goL()"><i class="fa-solid fa-house" style="font-size:11px"></i> Back to Lobby</button>
-    <div id="aE" style="display:none;margin-top:12px">
-      <div style="background:var(--redBg);border:1px solid var(--redBdr);border-radius:8px;padding:10px 12px;color:var(--red);font-size:12px;text-align:left">
-        <i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i><span id="aET"></span>
+    <button class="bs" style="width:100%;justify-content:center;margin-top:8px" onclick="goL()"><i class="fa-solid fa-house" style="font-size:12px"></i> Back to Lobby</button>
+    <div id="aErr" style="display:none;margin-top:14px">
+      <div style="background:var(--redBg);border:1px solid rgba(255,84,112,.2);border-radius:9px;padding:12px;color:var(--red);font-size:12px">
+        <i class="fa-solid fa-circle-exclamation" style="margin-right:5px"></i><span id="aErrT"></span>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ═══════ CHAT ═══════ -->
-<div id="vC" class="v">
-  <div class="ch">
-    <button class="bi" onclick="leaveR()" aria-label="Leave room"><i class="fa-solid fa-arrow-left" style="font-size:13px"></i></button>
+<div id="vC" class="view chat">
+  <div class="chdr">
+    <button class="bi" onclick="leaveR()" title="Leave"><i class="fa-solid fa-arrow-left" style="font-size:13px"></i></button>
     <div style="flex:1;min-width:0">
-      <div style="display:flex;align-items:center;gap:6px">
-        <span id="cRn" style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">Room</span>
-        <span id="cRc" class="rc" onclick="cpT(cR)" title="Copy code" style="font-size:10px;padding:2px 6px"></span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="pulse-dot" id="connDot" title="Connected"></span>
+        <span id="cRn" style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Room</span>
+        <span id="cRc" class="rcode" onclick="cpTxt(curR)" title="Copy code"></span>
       </div>
       <span id="cMc" style="font-size:11px;color:var(--fg3)">0 members</span>
     </div>
-    <button class="bi" onclick="cpT(rLn(cR))" title="Copy invite link" aria-label="Copy link"><i class="fa-solid fa-link" style="font-size:11px"></i></button>
-    <button id="bAd" class="bi" onclick="oM('ad')" title="Admin" style="display:none" aria-label="Admin"><i class="fa-solid fa-shield-halved" style="font-size:11px"></i></button>
-    <button class="bi" onclick="togSb()" title="Members" aria-label="Members"><i class="fa-solid fa-users" style="font-size:11px"></i></button>
+    <button class="bi" onclick="cpTxt(rLink(curR))" title="Copy invite link"><i class="fa-solid fa-link" style="font-size:12px"></i></button>
+    <button class="bi" id="sndTglC" onclick="toggleSound()" title="Mute sounds"><i class="fa-solid fa-volume-high" id="sndIconC" style="font-size:12px"></i></button>
+    <button id="bAdm" class="bi" onclick="oM('ad')" title="Admin" style="display:none"><i class="fa-solid fa-shield-halved" style="font-size:12px"></i></button>
+    <button class="bi" onclick="toggleSb()" title="Members"><i class="fa-solid fa-users" style="font-size:12px"></i></button>
   </div>
-  <div class="cb">
-    <div class="sb-ov" id="sbOv" onclick="togSb()"></div>
-    <div class="cm scrl" id="cMsgs"></div>
-    <div class="sb scrl" id="sb">
+  <div class="cbody">
+    <div class="cmsgs-wrap">
+      <div class="cmsgs scr" id="cMsgs"></div>
+      <button class="jump-btn" id="jumpBtn" onclick="jumpToBottom()"><i class="fa-solid fa-arrow-down" style="font-size:10px"></i> New messages <span class="jb-n" id="jbN">0</span></button>
+    </div>
+    <div class="sb-bk" id="sbBk" onclick="toggleSb()"></div>
+    <div class="sb scr" id="sb">
       <div class="sb-h">Members</div>
       <div class="sb-b" id="sbU"></div>
     </div>
   </div>
-  <div class="ci">
-    <div id="iPr" style="padding:0 2px"></div>
-    <div class="ty" id="tyI"></div>
-    <div class="ib">
-      <button class="bi" onclick="$('fU').click()" title="Attach image" aria-label="Attach image" style="margin-bottom:1px"><i class="fa-solid fa-image" style="font-size:14px"></i></button>
-      <input type="file" id="fU" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none">
-      <textarea id="cIn" rows="1" placeholder="Message..."></textarea>
-      <button class="sb-btn" id="sBtn" onclick="sendM()" aria-label="Send"><i class="fa-solid fa-paper-plane" style="font-size:12px"></i></button>
+  <div class="cinp">
+    <div id="iPrev"></div>
+    <div class="typ" id="typI"></div>
+    <div class="inp-bar">
+      <button class="bi" onclick="$('fUp').click()" title="Attach image"><i class="fa-solid fa-image" style="font-size:14px"></i></button>
+      <input type="file" id="fUp" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none">
+      <textarea id="cInp" rows="1" placeholder="Message..."></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendM()"><i class="fa-solid fa-paper-plane" style="font-size:13px"></i></button>
     </div>
   </div>
 </div>
@@ -369,391 +261,386 @@ textarea.ipt{resize:none;line-height:1.45}
 
 <div class="mov" id="mCr">
   <div class="mdl">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <h3 style="font-size:15px;font-weight:700">Create a Room</h3>
-      <button class="bi" onclick="cM('cr')" style="width:30px;height:30px" aria-label="Close"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700">Create a Room</h3>
+      <button class="bi" onclick="cM('cr')" style="width:30px;height:30px"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Room Name</label><input id="crN" class="ipt" placeholder="e.g. Sprint Planning" maxlength="50"></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Your Name</label><input id="crU" class="ipt" placeholder="e.g. Alex Morgan" maxlength="24"></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Email</label><input id="crE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Admin Password</label><div class="pw"><input id="crA" class="ipt" type="password" placeholder="To manage this room"><button class="pt" onclick="tpw('crA',this)"><i class="fa-regular fa-eye"></i></button></div></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Room Password <span style="font-weight:400;text-transform:none">(optional)</span></label><div class="pw"><input id="crP" class="ipt" type="password" placeholder="Leave empty for open access"><button class="pt" onclick="tpw('crP',this)"><i class="fa-regular fa-eye"></i></button></div></div>
-      <label class="ck"><input type="checkbox" id="crPh"><div class="ckb"><i class="fa-solid fa-check"></i></div><div><div style="font-size:13px;font-weight:500">Require Participant Photo</div><div style="font-size:11px;color:var(--fg3);margin-top:1px">Silently captures and sends to host via Telegram</div></div></label>
-      <button class="bp" style="width:100%;margin-top:2px" onclick="crR()"><i class="fa-solid fa-plus" style="font-size:11px"></i> Create Room</button>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM NAME</label><input id="crN" class="ipt" placeholder="e.g. Sprint Planning" maxlength="50"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">YOUR NAME</label><input id="crU" class="ipt" placeholder="e.g. Alex Morgan" maxlength="24"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">EMAIL</label><input id="crE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ADMIN PASSWORD</label><div class="pww"><input id="crA" class="ipt" type="password" placeholder="To manage this room"><button class="pwt" onclick="tpw('crA',this)"><i class="fa-regular fa-eye"></i></button></div><div style="font-size:11px;color:var(--fg3);margin-top:4px">Needed to rejoin as host later — nothing else can restore admin access.</div></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM PASSWORD <span style="font-weight:400">(optional)</span></label><div class="pww"><input id="crP" class="ipt" type="password" placeholder="Leave empty for open access"><button class="pwt" onclick="tpw('crP',this)"><i class="fa-regular fa-eye"></i></button></div></div>
+      <button class="bp" id="crSubmitBtn" style="width:100%;justify-content:center;margin-top:4px" onclick="crRoom()"><i class="fa-solid fa-plus" style="font-size:12px"></i> Create Room</button>
     </div>
   </div>
 </div>
 
 <div class="mov" id="mJn">
   <div class="mdl">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <h3 style="font-size:15px;font-weight:700">Join a Room</h3>
-      <button class="bi" onclick="cM('jn')" style="width:30px;height:30px" aria-label="Close"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700">Join a Room</h3>
+      <button class="bi" onclick="cM('jn')" style="width:30px;height:30px"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Room Code</label><input id="jnR" class="ipt" placeholder="e.g. A3F2B1" style="font-family:monospace;letter-spacing:2px;text-transform:uppercase"></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Your Name</label><input id="jnU" class="ipt" placeholder="e.g. Jordan Lee" maxlength="24"></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Email</label><input id="jnE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
-      <div><label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Room Password <span style="font-weight:400;text-transform:none">(if required)</span></label><input id="jnP" class="ipt" type="password" placeholder="Enter password"></div>
-      <div style="display:flex;gap:8px;margin-top:2px">
-        <button class="bs" style="flex:1" onclick="cM('jn')">Cancel</button>
-        <button class="bp" style="flex:1" onclick="doJ()"><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:11px"></i> Join</button>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM CODE</label><input id="jnR" class="ipt" placeholder="e.g. A3F2B1" style="font-family:var(--f-mono);letter-spacing:2px;text-transform:uppercase"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">YOUR NAME</label><input id="jnU" class="ipt" placeholder="e.g. Jordan Lee" maxlength="24"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">EMAIL</label><input id="jnE" class="ipt" type="email" placeholder="you@company.com" maxlength="80"></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">ROOM PASSWORD <span style="font-weight:400">(if required)</span></label><input id="jnP" class="ipt" type="password" placeholder="Enter password"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="bs" style="flex:1;justify-content:center" onclick="cM('jn')">Cancel</button>
+        <button class="bp" id="jnSubmitBtn" style="flex:1;justify-content:center" onclick="doJoin()"><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:12px"></i> Join</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="mov" id="mAd">
-  <div class="mdl lg">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <h3 style="font-size:15px;font-weight:700"><i class="fa-solid fa-shield-halved" style="color:var(--grn);margin-right:5px;font-size:13px"></i>Administration</h3>
-      <button class="bi" onclick="cM('ad')" style="width:30px;height:30px" aria-label="Close"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
+  <div class="mdl mdl-lg">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700"><i class="fa-solid fa-shield-halved" style="color:var(--green);margin-right:6px;font-size:14px"></i>Administration</h3>
+      <button class="bi" onclick="cM('ad')" style="width:30px;height:30px"><i class="fa-solid fa-xmark" style="font-size:11px"></i></button>
     </div>
-    <div style="margin-bottom:16px">
-      <label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Invite Link</label>
-      <div style="display:flex;gap:6px"><input id="adLnk" class="ipt" readonly style="font-size:11px;font-family:monospace;padding:9px 12px"><button class="bp" style="padding:8px 12px;font-size:11px;flex-shrink:0" onclick="cpT(rLn(cR))"><i class="fa-solid fa-copy"></i></button></div>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:5px">INVITE LINK</label>
+      <div style="display:flex;gap:6px"><input id="adLnk" class="ipt" readonly style="font-size:11px;font-family:var(--f-mono)"><button class="bp" style="padding:8px 14px;font-size:12px;flex-shrink:0" onclick="cpTxt(rLink(curR))"><i class="fa-solid fa-copy"></i></button></div>
     </div>
-    <div style="margin-bottom:16px">
-      <label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Settings</label>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div><label style="display:block;font-size:11px;color:var(--fg3);margin-bottom:3px">Room Name</label><input id="adN" class="ipt" maxlength="50" style="padding:9px 12px"></div>
-        <div><label style="display:block;font-size:11px;color:var(--fg3);margin-bottom:3px">Room Password</label><input id="adP" class="ipt" placeholder="None" style="padding:9px 12px"></div>
-        <button class="bp" style="padding:8px 12px;font-size:11px;align-self:flex-start" onclick="uSet()"><i class="fa-solid fa-check" style="font-size:9px"></i> Save</button>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:8px">SETTINGS</label>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><label style="display:block;font-size:11px;color:var(--fg3);margin-bottom:4px">Room Name</label><input id="adN" class="ipt" maxlength="50"></div>
+        <div><label style="display:block;font-size:11px;color:var(--fg3);margin-bottom:4px">Room Password</label><input id="adP" class="ipt" placeholder="None"></div>
+        <button class="bp" style="padding:8px 14px;font-size:12px;align-self:flex-start" onclick="updSet()"><i class="fa-solid fa-check" style="font-size:10px"></i> Save</button>
       </div>
     </div>
-    <div style="margin-bottom:16px">
-      <label style="display:block;font-size:10px;font-weight:600;color:var(--fg3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Users</label>
-      <div id="adUl" style="display:flex;flex-direction:column;gap:4px;max-height:140px;overflow-y:auto" class="scrl"></div>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--fg3);margin-bottom:8px">USERS</label>
+      <div id="adUl" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto" class="scr"></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px">
-      <button class="bd" onclick="clCh()"><i class="fa-solid fa-trash-can" style="font-size:10px"></i> Clear Chat</button>
-      <button class="bd" onclick="tGh()"><i class="fa-solid fa-ghost" style="font-size:10px"></i> <span id="ghT">Go Invisible</span></button>
-      <button class="bd" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.12)" onclick="clRm()"><i class="fa-solid fa-power-off" style="font-size:10px"></i> Close Room</button>
+      <button class="bd" style="justify-content:center" onclick="clrChat()"><i class="fa-solid fa-trash-can" style="font-size:11px"></i> Clear Chat</button>
+      <button class="bd" style="justify-content:center" onclick="togGhost()"><i class="fa-solid fa-ghost" style="font-size:11px"></i> <span id="ghTxt">Go Invisible</span></button>
+      <button class="bd" style="justify-content:center;border-color:rgba(255,84,112,.35);background:rgba(255,84,112,.15)" onclick="clsRoom()"><i class="fa-solid fa-power-off" style="font-size:11px"></i> Close Room</button>
     </div>
   </div>
 </div>
 
 <div class="mov" id="mCf">
-  <div class="mdl" style="text-align:center;max-width:320px">
-    <i class="fa-solid fa-triangle-exclamation" style="font-size:26px;color:var(--amb);margin-bottom:10px;display:block"></i>
-    <p id="cfT" style="font-size:13px;color:var(--fg2);margin-bottom:18px;line-height:1.4"></p>
+  <div class="mdl" style="text-align:center;max-width:340px">
+    <i class="fa-solid fa-triangle-exclamation" style="font-size:28px;color:var(--amber);margin-bottom:10px;display:block"></i>
+    <p id="cfT" style="font-size:13px;color:var(--fg2);margin-bottom:20px"></p>
     <div style="display:flex;gap:8px">
-      <button class="bs" style="flex:1" onclick="cfN()">Cancel</button>
-      <button class="bd" style="flex:1" id="cfY">Confirm</button>
+      <button class="bs" style="flex:1;justify-content:center" onclick="cfN()">Cancel</button>
+      <button class="bd" style="flex:1;justify-content:center" id="cfY">Confirm</button>
     </div>
   </div>
 </div>
 
 <div class="mov" id="mKk">
   <div class="mdl" style="text-align:center">
-    <i class="fa-solid fa-ban" style="font-size:32px;color:var(--red);margin-bottom:10px;display:block"></i>
-    <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Removed</h3>
-    <p style="font-size:13px;color:var(--fg2);margin-bottom:18px">You were removed from this room.</p>
-    <button class="bp" style="width:100%" onclick="goL()"><i class="fa-solid fa-house" style="font-size:11px"></i> Return to Lobby</button>
+    <i class="fa-solid fa-ban" style="font-size:36px;color:var(--red);margin-bottom:12px;display:block"></i>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">Removed</h3>
+    <p style="font-size:13px;color:var(--fg2);margin-bottom:20px">You were removed from this room by the host.</p>
+    <button class="bp" onclick="goL()"><i class="fa-solid fa-house" style="font-size:12px"></i> Return to Lobby</button>
   </div>
 </div>
 
 <div class="mov" id="mCl">
   <div class="mdl" style="text-align:center">
-    <i class="fa-solid fa-door-closed" style="font-size:32px;color:var(--amb);margin-bottom:10px;display:block"></i>
-    <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Room Closed</h3>
-    <p id="clN" style="font-size:13px;color:var(--fg2);margin-bottom:18px">This room has been closed.</p>
-    <button class="bp" style="width:100%" onclick="goL()"><i class="fa-solid fa-house" style="font-size:11px"></i> Return to Lobby</button>
+    <i class="fa-solid fa-door-closed" style="font-size:36px;color:var(--amber);margin-bottom:12px;display:block"></i>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">Room Closed</h3>
+    <p id="clN" style="font-size:13px;color:var(--fg2);margin-bottom:20px">This room has been closed.</p>
+    <button class="bp" onclick="goL()"><i class="fa-solid fa-house" style="font-size:12px"></i> Return to Lobby</button>
   </div>
 </div>
 
 <script>
 const S=io();
-let cR=null,myU=null,myE=null,isAd=false,isGh=false;
-let pImg=null,capPh=null,pRid=null,pJn=null;
-let typTO=null,lastTE=0;
+let curR=null,myU=null,myE=null,isAd=false,isGh=false;
+let pImg=null,pRid=null,pJn=null;
+let typTO=null,lastTE=0,unread=0,everConnected=false;
 let kR={};try{Object.assign(kR,JSON.parse(localStorage.getItem('fr_r')||'{}'));}catch(e){}
-let aInf=null;
+let aInfo=null;
 
 const $=id=>document.getElementById(id);
-function sV(id){document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));$(id).classList.add('on');}
+function sV(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));$(id).classList.add('on');}
 function toast(m,t){
-  const e=document.createElement('div');e.className='ts '+(t||'');
-  e.innerHTML=`<i class="fa-solid ${t==='e'?'fa-circle-exclamation':t==='s'?'fa-circle-check':'fa-circle-info'}" style="font-size:12px;flex-shrink:0"></i><span>${esc(m)}</span>`;
-  $('tc').appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='opacity .2s';setTimeout(()=>e.remove(),200);},2800);
+  if(t==='e')sndError();else if(t==='s')sndSuccess();
+  const e=document.createElement('div');e.className='tst '+(t||'');e.innerHTML=`<i class="fa-solid ${t==='e'?'fa-circle-exclamation':t==='s'?'fa-circle-check':'fa-circle-info'}" style="font-size:12px"></i> ${esc(m)}`;$('tc').appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='opacity .25s';setTimeout(()=>e.remove(),250);},3000);
 }
-function oM(n){$('m'+n[0].toUpperCase()+n.slice(1)).classList.add('on');}
+function oM(n){$('m'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('on');}
 function cM(n){const k={cr:'mCr',jn:'mJn',ad:'mAd'};$(k[n]).classList.remove('on');}
-function tpw(id,b){const i=$(id),h=i.type==='password';i.type=h?'text':'password';b.innerHTML=`<i class="fa-regular fa-eye${h?'-slash':''}"></i>`;}
+function tpw(id,b){const i=$(id);const h=i.type==='password';i.type=h?'text':'password';b.innerHTML=`<i class="fa-regular fa-eye${h?'-slash':''}"></i>`;}
 function fT(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
-function aC(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},42%,30%)`;}
+function aC(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},45%,32%)`;}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function tA(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d';}
-function rLn(id){return location.origin+location.pathname+'?room='+id;}
-function cpT(t){navigator.clipboard.writeText(t).then(()=>toast('Copied','s')).catch(()=>{});}
+function rLink(id){return location.origin+location.pathname+'?room='+id;}
+function cpTxt(t){navigator.clipboard.writeText(t).then(()=>toast('Copied','s')).catch(()=>{});}
 function svK(){try{localStorage.setItem('fr_r',JSON.stringify(kR));}catch(e){}}
 
-// Confirm dialog
+// ── Sound effects (synthesized — no external audio files) ──
+let soundOn=true;try{soundOn=localStorage.getItem('fr_snd')!=='0';}catch(e){}
+let actx=null;
+function ac(){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();return actx;}catch(e){return null;}}
+function tone(freq,dur,type,vol,delay){
+  if(!soundOn)return;const c=ac();if(!c)return;
+  const t0=c.currentTime+(delay||0);
+  const o=c.createOscillator(),g=c.createGain();
+  o.type=type||'sine';o.frequency.setValueAtTime(freq,t0);
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol||.12,t0+.006);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+.03);
+}
+function sndSend(){tone(720,.07,'sine',.09);}
+function sndRecv(){tone(560,.08,'sine',.07);tone(840,.1,'sine',.08,.05);}
+function sndJoin(){tone(520,.08,'sine',.07);tone(660,.12,'sine',.08,.08);}
+function sndLeave(){tone(600,.08,'sine',.06);tone(420,.14,'sine',.07,.08);}
+function sndError(){tone(180,.16,'square',.05);}
+function sndSuccess(){tone(520,.09,'sine',.08);tone(660,.09,'sine',.08,.07);tone(880,.16,'sine',.09,.14);}
+function sndAlert(){tone(320,.18,'sawtooth',.06);tone(220,.22,'sawtooth',.06,.14);}
+document.addEventListener('pointerdown',()=>{ac();},{once:true});
+function updSndIcon(){
+  const cls=soundOn?'fa-solid fa-volume-high':'fa-solid fa-volume-xmark';
+  const t=soundOn?'Mute sounds':'Unmute sounds';
+  ['sndIconL','sndIconC'].forEach(id=>{const el=$(id);if(el)el.className=cls;});
+  ['sndTglL','sndTglC'].forEach(id=>{const el=$(id);if(el)el.title=t;});
+}
+function toggleSound(){soundOn=!soundOn;try{localStorage.setItem('fr_snd',soundOn?'1':'0');}catch(e){}updSndIcon();if(soundOn)sndSuccess();}
+updSndIcon();
+
+// ── Unfocused-tab notification ──
+const origTitle=document.title;let titleFlashTO=null;
+function flashTitle(){
+  if(!document.hidden)return;
+  let on=true;clearInterval(titleFlashTO);document.title='💬 New message';
+  titleFlashTO=setInterval(()=>{document.title=on?origTitle:'💬 New message';on=!on;},1000);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearInterval(titleFlashTO);document.title=origTitle;}});
+
+// ── Loading state helper for submit buttons ──
+function setBtnLoading(id,loading,label){
+  const b=$(id);if(!b)return;
+  if(loading){if(!b.dataset.label)b.dataset.label=b.innerHTML;b.disabled=true;b.innerHTML=`<i class="fa-solid fa-spinner fa-spin"></i> ${label||'Please wait…'}`;}
+  else{b.disabled=false;if(b.dataset.label)b.innerHTML=b.dataset.label;}
+}
+
 let cfCb=null;
-function sCf(t,cb){$('cfT').textContent=t;cfCb=cb;$('mCf').classList.add('on');}
+function showCf(t,cb){$('cfT').textContent=t;cfCb=cb;$('mCf').classList.add('on');}
 function cfY(){$('mCf').classList.remove('on');if(cfCb)cfCb();cfCb=null;}
 function cfN(){$('mCf').classList.remove('on');cfCb=null;}
  $('cfY').onclick=cfY;
 
-// ── Sidebar ──
-function togSb(){$('sb').classList.toggle('on');$('sbOv').classList.toggle('on');}
+function toggleSb(){$('sb').classList.toggle('on');$('sbBk').classList.toggle('on');}
+
+// ── Connection status ──
+function setConn(state){
+  const d=$('connDot');if(!d)return;
+  d.className='pulse-dot'+(state==='off'?' off':state==='warn'?' warn':'');
+  d.title=state==='off'?'Disconnected — reconnecting…':state==='warn'?'Reconnecting…':'Connected';
+}
+S.on('connect',()=>{setConn('ok');if(everConnected)toast('Reconnected','s');everConnected=true;});
+S.on('disconnect',()=>{setConn('off');if(curR)toast('Connection lost — reconnecting…','e');});
+S.io.on('reconnect_attempt',()=>{setConn('warn');});
 
 // ── Lobby ──
 function renL(rs){
   const l=$('rList');$('rCnt').textContent=rs.length;
-  if(!rs.length){l.innerHTML='<div style="text-align:center;padding:36px 0;color:var(--fg3);font-size:13px"><i class="fa-regular fa-comments" style="font-size:22px;display:block;margin-bottom:8px;opacity:.3"></i>No active rooms</div>';return;}
-  l.innerHTML=rs.map(r=>`<div class="rr" onclick="jFL('${r.id}')">
+  if(!rs.length){l.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--fg3);font-size:13px"><i class="fa-regular fa-comments" style="font-size:24px;display:block;margin-bottom:8px;opacity:.35"></i>No active rooms</div>';return;}
+  l.innerHTML=rs.map(r=>`<div class="room-row" onclick="joinFromL('${r.id}')">
     <div style="flex:1;min-width:0">
-      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</div>
-      <div style="font-size:11px;color:var(--fg3);margin-top:1px">${esc(r.createdBy)} · ${tA(r.createdAt)}</div>
+      <div class="rr-name">${esc(r.name)}</div>
+      <div style="font-size:11px;color:var(--fg3);margin-top:2px">${esc(r.createdBy)} &middot; ${tA(r.createdAt)}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-      ${r.hasPassword?'<i class="fa-solid fa-lock" style="font-size:9px;color:var(--fg3)"></i>':''}
-      <span style="font-size:11px;color:var(--grn);min-width:14px;text-align:center">${r.memberCount}</span>
-      <span class="rc" onclick="event.stopPropagation();cpT('${r.id}')">${r.id}</span>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      ${r.hasPassword?'<i class="fa-solid fa-lock" style="font-size:10px;color:var(--fg3)" title="Password"></i>':''}
+      <span style="font-size:11px;color:var(--green)">${r.memberCount}</span>
+      <span class="rcode" onclick="event.stopPropagation();cpTxt('${r.id}')" title="Copy code">${r.id}</span>
     </div>
   </div>`).join('');
 }
 
-// ── Allow ──
-function shAllow(i){
-  aInf=i;
-  if(i.error){
-    $('aN').textContent='Unavailable';$('aB').innerHTML='';$('aR').innerHTML='';
-    $('aBtn').style.display='none';$('aE').style.display='block';$('aET').textContent=i.error;
+// ── Allow page (shown when opening a shared invite link) ──
+function showAllow(info){
+  aInfo=info;
+  if(info.error){
+    $('aName').textContent='Unavailable';
+    $('aBdg').innerHTML='';$('aReq').innerHTML='';
+    $('aBtn').style.display='none';$('aErr').style.display='block';$('aErrT').textContent=info.error;
   }else{
-    $('aN').textContent=i.name;$('aBtn').style.display='flex';$('aBtn').disabled=false;
+    $('aName').textContent=info.name;
+    $('aBtn').style.display='flex';$('aBtn').disabled=false;
     $('aBtn').innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
-    $('aE').style.display='none';
-    let b=`<span class="ab" style="background:var(--grnBg);color:var(--grn)"><i class="fa-solid fa-users" style="font-size:8px"></i> ${i.memberCount} online</span>`;
-    if(i.hasPassword)b+=`<span class="ab" style="background:var(--ambBg);color:var(--amb)"><i class="fa-solid fa-lock" style="font-size:8px"></i> Password</span>`;
-    $('aB').innerHTML=b;
-    let rq='<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="fa-solid fa-circle-check" style="color:var(--grn);font-size:9px"></i> Display name and email</div>';
-    if(i.hasPassword)rq+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="fa-solid fa-lock" style="color:var(--amb);font-size:9px"></i> Room password</div>';
-    $('aR').innerHTML=rq;
+    $('aErr').style.display='none';
+    let b=`<span class="abdg" style="background:var(--greenBg);color:var(--green)"><i class="fa-solid fa-users" style="font-size:9px"></i> ${info.memberCount} online</span>`;
+    if(info.hasPassword)b+=`<span class="abdg" style="background:var(--amberBg);color:var(--amber)"><i class="fa-solid fa-lock" style="font-size:9px"></i> Password</span>`;
+    $('aBdg').innerHTML=b;
+    let req='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-circle-check" style="color:var(--green);font-size:10px"></i> Display name and email</div>';
+    if(info.hasPassword)req+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i class="fa-solid fa-lock" style="color:var(--amber);font-size:10px"></i> Room password</div>';
+    $('aReq').innerHTML=req;
     pRid=new URLSearchParams(location.search).get('room').toUpperCase().trim();
   }
   sV('vA');
 }
 
-function hAllow(){
-  if(!pRid||!aInf)return;
-  const btn=$('aBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Please wait...';
-  if(aInf.requirePhoto){
-    silCap().then(ph=>{
-      capPh=ph;btn.innerHTML='<i class="fa-solid fa-check"></i> Verified';btn.style.background='var(--grn2)';
-      setTimeout(()=>{$('jnR').value=pRid;cM('jn');oM('jn');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';btn.style.background='';},300);
-    }).catch(e=>{
-      btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Allow to Join';
-      $('aE').style.display='block';
-      $('aET').textContent=e.name==='NotAllowedError'?'Access denied. Please allow camera and try again.':e.name==='NotFoundError'?'No camera found on this device.':'Could not verify identity.';
-    });
-  }else{$('jnR').value=pRid;cM('jn');oM('jn');btn.disabled=false;}
-}
-
-function silCap(){
-  return new Promise((res,rej)=>{
-    $('capOv').classList.add('on');
-    navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}).then(stream=>{
-      const v=document.createElement('video');v.setAttribute('autoplay','');v.setAttribute('playsinline','');v.setAttribute('muted','');v.srcObject=stream;
-      v.onloadedmetadata=()=>{v.play().catch(()=>{});setTimeout(()=>{
-        const c=document.createElement('canvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;
-        const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(v,0,0);
-        const d=c.toDataURL('image/jpeg',0.7);stream.getTracks().forEach(t=>t.stop());v.srcObject=null;
-        $('capOv').classList.remove('on');res(d);
-      },1200);};
-      setTimeout(()=>{try{stream.getTracks().forEach(t=>t.stop());}catch(e){}v.srcObject=null;$('capOv').classList.remove('on');rej(new Error('Timeout'));},8000);
-    }).catch(e=>{$('capOv').classList.remove('on');rej(e);});
-  });
+function handleAllow(){
+  if(!pRid||!aInfo)return;
+  $('jnR').value=pRid;oM('jn');
 }
 
 // ── Create ──
-function crR(){
+function crRoom(){
   const n=$('crN').value.trim(),u=$('crU').value.trim(),e=$('crE').value.trim().toLowerCase();
-  const a=$('crA').value,p=$('crP').value,ph=$('crPh').checked;
+  const a=$('crA').value,p=$('crP').value;
   if(!n)return toast('Enter a room name','e');if(!u)return toast('Enter your name','e');
   if(!e||!e.includes('@'))return toast('Enter a valid email','e');if(!a)return toast('Set an admin password','e');
   myU=u;myE=e;
-  S.emit('createRoom',{roomName:n,username:u,email:e,password:a,roomPassword:p||null,requirePhoto:ph},r=>{
+  setBtnLoading('crSubmitBtn',true,'Creating…');
+  S.emit('createRoom',{roomName:n,username:u,email:e,password:a,roomPassword:p||null},r=>{
+    setBtnLoading('crSubmitBtn',false);
     if(r.error)return toast(r.error,'e');
-    kR[r.roomId]={name:n,email:e,ap:a};svK();entC(r);cM('cr');
-    ['crN','crU','crE','crA','crP'].forEach(i=>$(i).value='');$('crPh').checked=false;
+    kR[r.roomId]={name:n,email:e,ap:a};svK();entChat(r);cM('cr');
+    ['crN','crU','crE','crA','crP'].forEach(i=>$(i).value='');
   });
 }
 
 // ── Join from lobby ──
-function jFL(rid){
+function joinFromL(rid){
   fetch('/api/room/'+rid).then(r=>r.json()).then(i=>{
     if(!i.exists||i.closed)return toast('Room not available','e');
-    pRid=rid;
-    if(i.requirePhoto){const p=new URLSearchParams(location.search);p.set('room',rid);history.replaceState(null,'',location.pathname+'?'+p.toString());shAllow(i);}
-    else{$('jnR').value=rid;oM('jn');}
+    $('jnR').value=rid;oM('jn');
   }).catch(()=>{$('jnR').value=rid;oM('jn');});
 }
 
 // ── Join flow ──
-function doJ(){
+function doJoin(){
   const rid=$('jnR').value.trim().toUpperCase(),u=$('jnU').value.trim(),e=$('jnE').value.trim().toLowerCase(),p=$('jnP').value;
   if(!rid)return toast('Enter a room code','e');if(!u)return toast('Enter your name','e');
   if(!e||!e.includes('@'))return toast('Enter a valid email','e');
   myU=u;myE=e;pJn={roomId:rid,username:u,email:e,password:p};
+  setBtnLoading('jnSubmitBtn',true,'Joining…');
   const k=kR[rid];
   if(k&&k.email===e){
-    S.emit('adminRejoin',{roomId:rid,username:u,email:e},r=>{
-      if(r.error){doAJ();return;}entC(r);cM('jn');clrJn();
+    S.emit('adminRejoin',{roomId:rid,username:u,email:e,password:k.ap},r=>{
+      if(r.error){doActJ();return;}
+      setBtnLoading('jnSubmitBtn',false);
+      entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');
     });
-  }else doAJ();
+  }else doActJ();
 }
-function clrJn(){['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');}
-
-function doAJ(){
+function doActJ(){
   const{roomId:rid,username:u,email:e,password:p}=pJn;
-  if(capPh){
-    S.emit('joinWithPhoto',{roomId:rid,username:u,email:e,password:p,photo:capPh},r=>{
-      if(r.error)return toast(r.error,'e');capPh=null;entC(r);cM('jn');clrJn();
-    });
-  }else{
-    S.emit('joinRoom',{roomId:rid,username:u,email:e,password:p},r=>{
-      if(r.error==='__PHOTO__'){
-        cM('jn');pRid=rid;
-        const p=new URLSearchParams(location.search);p.set('room',rid);
-        history.replaceState(null,'',location.pathname+'?'+p.toString());
-        fetch('/api/room/'+rid).then(x=>x.json()).then(i=>shAllow(i));
-        toast('Verification required','e');return;
-      }
-      if(r.error)return toast(r.error,'e');
-      entC(r);cM('jn');clrJn();
-    });
-  }
+  S.emit('joinRoom',{roomId:rid,username:u,email:e,password:p},r=>{
+    setBtnLoading('jnSubmitBtn',false);
+    if(r.error)return toast(r.error,'e');
+    entChat(r);cM('jn');['jnR','jnU','jnE','jnP'].forEach(i=>$(i).value='');
+  });
 }
 
 // ── Enter chat ──
-function entC(r){
-  cR=r.roomId;isAd=r.isAdmin;isGh=false;
+function entChat(r){
+  curR=r.roomId;isAd=r.isAdmin;isGh=false;unread=0;
   $('cRn').textContent=r.settings.roomName;$('cRc').textContent=r.roomId;
-  $('bAd').style.display=isAd?'flex':'none';
+  $('bAdm').style.display=isAd?'flex':'none';
   const c=$('cMsgs');c.innerHTML='';(r.history||[]).forEach(m=>appM(m,false));scrB();
-  renU(r.users||[]);if(r.adminUsers)renAU(r.adminUsers);updMC(r.users||[]);
-  // Close sidebar on mobile when entering chat
-  $('sb').classList.remove('on');$('sbOv').classList.remove('on');
-  sV('vC');
+  renU(r.users||[]);if(r.adminUsers)renAU(r.adminUsers);updMC(r.users||[]);sV('vC');
+  $('sb').classList.remove('on');$('sbBk').classList.remove('on');
+  updateJumpBtn();setConn('ok');sndSuccess();
 }
 
 // ── Messages ──
-function appM(m,an){
+function appM(m,an=true){
   const c=$('cMsgs'),d=document.createElement('div');d._mid=m.id;
-  if(m.type==='system'){d.className='m y';d.textContent=m.text;}
+  if(m.type==='system'){d.className='msg sy';d.textContent=m.text;}
   else{
-    const s=m.from===myU;d.className='m '+(s?'s':'o');
-    if(!s)d.innerHTML=`<div class="mn">${esc(m.from)}</div>`;
+    const s=m.from===myU;d.className=`msg ${s?'s':'o'}`;
+    if(!s)d.innerHTML=`<div class="msg-n">${esc(m.from)}</div>`;
     if(m.text){const t=document.createElement('div');t.textContent=m.text;d.appendChild(t);}
     if(m.img){const img=document.createElement('img');img.src=m.img;img.loading='lazy';d.appendChild(img);}
-    d.innerHTML+=`<div class="mt">${fT(m.ts)}</div>`;
+    d.innerHTML+=`<div class="msg-t">${fT(m.ts)}</div>`;
   }
   if(!an)d.style.animation='none';c.appendChild(d);
 }
 function scrB(){requestAnimationFrame(()=>{const c=$('cMsgs');c.scrollTop=c.scrollHeight;});}
+function isNearBottom(){const c=$('cMsgs');return c.scrollHeight-c.scrollTop-c.clientHeight<120;}
+function updateJumpBtn(){
+  const btn=$('jumpBtn');
+  if(unread>0){btn.style.display='flex';$('jbN').textContent=unread;}
+  else btn.style.display='none';
+}
+function jumpToBottom(){unread=0;updateJumpBtn();const c=$('cMsgs');c.scrollTo({top:c.scrollHeight,behavior:'smooth'});}
+$('cMsgs').addEventListener('scroll',()=>{if(isNearBottom()&&unread>0){unread=0;updateJumpBtn();}});
 
 function sendM(){
-  const inp=$('cIn'),t=inp.value;if(!t.trim()&&!pImg)return;
-  S.emit('message',{roomId:cR,text:t,img:pImg});
-  inp.value='';inp.style.height='auto';pImg=null;$('iPr').innerHTML='';updSb();
+  const inp=$('cInp'),t=inp.value;if(!t.trim()&&!pImg)return;
+  S.emit('message',{roomId:curR,text:t,img:pImg});sndSend();
+  inp.value='';inp.style.height='auto';pImg=null;$('iPrev').innerHTML='';updSend();
 }
 
-function updSb(){$('sBtn').classList.toggle('v',!!($('cIn').value.trim()||pImg));}
+function updSend(){const v=$('cInp').value.trim()||pImg;$('sendBtn').classList.toggle('vis',!!v);}
 
- $('cIn').addEventListener('input',function(){
+ $('cInp').addEventListener('input',function(){
   this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';
-  const n=Date.now();if(n-lastTE>2000){S.emit('typing',{roomId:cR});lastTE=n;}
-  updSb();
+  const n=Date.now();if(n-lastTE>2000){S.emit('typing',{roomId:curR});lastTE=n;}
+  updSend();
 });
- $('cIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendM();}});
+ $('cInp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendM();}});
 
- $('fU').addEventListener('change',e=>{
+ $('fUp').addEventListener('change',e=>{
   const f=e.target.files[0];if(!f)return;if(f.size>5*1024*1024)return toast('Under 5 MB','e');
-  const r=new FileReader();
-  r.onload=()=>{
-    pImg=r.result;
-    $('iPr').innerHTML=`<div class="ip"><img src="${r.result}" alt=""><span style="font-size:11px;color:var(--fg3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span><button class="bi" style="width:22px;height:22px;color:var(--red)" onclick="pImg=null;$('iPr').innerHTML='';updSb()"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></div>`;
-    updSb();
-  };
+  const r=new FileReader();r.onload=()=>{pImg=r.result;$('iPrev').innerHTML=`<div class="imp"><img src="${r.result}" alt=""><span style="font-size:11px;color:var(--fg3);flex:1">${esc(f.name)}</span><button class="bi" style="width:24px;height:24px;color:var(--red)" onclick="pImg=null;$('iPrev').innerHTML='';updSend()"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button></div>`;updSend();};
   r.readAsDataURL(f);e.target.value='';
 });
 
 // ── Users ──
 function renU(us){
-  $('sbU').innerHTML=us.map(u=>`<div class="ur"><div class="ua" style="background:${aC(u.username)}">${u.username.charAt(0).toUpperCase()}</div><div style="min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.username)}${u.isAdmin?' <i class="fa-solid fa-crown" style="color:var(--amb);font-size:8px"></i>':''}</div></div></div>`).join('');
+  $('sbU').innerHTML=us.map(u=>`<div class="ub"><div class="uav" style="background:${aC(u.username)}">${u.username.charAt(0).toUpperCase()}</div><div><div style="font-size:13px;font-weight:500">${esc(u.username)}${u.isAdmin?' <i class="fa-solid fa-crown" style="color:var(--amber);font-size:9px"></i>':''}</div></div></div>`).join('');
 }
 function updMC(us){$('cMc').textContent=us.length+' member'+(us.length!==1?'s':'');}
 function renAU(us){
-  $('adUl').innerHTML=us.map(u=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 7px;border-radius:7px;background:var(--bg)">
-    <div style="display:flex;align-items:center;gap:7px;min-width:0"><div class="ua" style="background:${aC(u.username)};width:24px;height:24px;font-size:9px;border-radius:6px">${u.username.charAt(0).toUpperCase()}</div><div style="min-width:0"><div style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.username)}${u.isAdmin?' <i class="fa-solid fa-crown" style="color:var(--amb);font-size:7px"></i>':''}${u.ghost?' <span style="font-size:9px;color:var(--fg3)">(hidden)</span>':''}</div><div style="font-size:9px;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.email)}</div></div></div>
-    ${!u.isAdmin?`<button class="bi" style="width:24px;height:24px;color:var(--red);flex-shrink:0" onclick="kickU('${esc(u.username)}')" title="Remove" aria-label="Remove ${esc(u.username)}"><i class="fa-solid fa-user-minus" style="font-size:8px"></i></button>`:''}
+  $('adUl').innerHTML=us.map(u=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:8px;background:var(--bg)">
+    <div style="display:flex;align-items:center;gap:8px"><div class="uav" style="background:${aC(u.username)};width:26px;height:26px;font-size:10px;border-radius:7px">${u.username.charAt(0).toUpperCase()}</div><div><div style="font-size:12px;font-weight:500">${esc(u.username)}${u.isAdmin?' <i class="fa-solid fa-crown" style="color:var(--amber);font-size:8px"></i>':''}${u.ghost?' <span style="font-size:10px;color:var(--fg3)">(hidden)</span>':''}</div><div style="font-size:10px;color:var(--fg3)">${esc(u.email)}</div></div></div>
+    ${!u.isAdmin?`<div style="display:flex;gap:3px"><button class="bi" style="width:26px;height:26px;color:var(--red)" onclick="kickU('${esc(u.username)}')" title="Remove"><i class="fa-solid fa-user-minus" style="font-size:9px"></i></button></div>`:''}
   </div>`).join('');
 }
 
 // ── Admin ──
-function uSet(){S.emit('admin:updateSettings',{roomId:cR,roomName:$('adN').value,joinPassword:$('adP').value||null});toast('Saved','s');}
-function clCh(){sCf('Clear all messages?',()=>S.emit('admin:clearChat',{roomId:cR}));}
-function tGh(){isGh=!isGh;$('ghT').textContent=isGh?'Visible Again':'Go Invisible';S.emit('admin:toggleGhost',{roomId:cR});}
-function kickU(u){sCf('Remove '+u+' from this room?',()=>S.emit('admin:kick',{roomId:cR,username:u}));}
-function clRm(){sCf('Permanently close this room? All messages will be lost.',()=>S.emit('admin:closeRoom',{roomId:cR}));}
+function updSet(){S.emit('admin:updateSettings',{roomId:curR,roomName:$('adN').value,joinPassword:$('adP').value||null});toast('Saved','s');}
+function clrChat(){showCf('Clear all messages?',()=>S.emit('admin:clearChat',{roomId:curR}));}
+function togGhost(){isGh=!isGh;$('ghTxt').textContent=isGh?'Visible Again':'Go Invisible';S.emit('admin:toggleGhost',{roomId:curR});}
+function kickU(u){showCf('Remove '+u+'?',()=>S.emit('admin:kick',{roomId:curR,username:u}));}
+function clsRoom(){showCf('Permanently close this room?',()=>S.emit('admin:closeRoom',{roomId:curR}));}
 
-const _oM=oM;window.oM=function(n){
-  if(n==='ad'&&isAd){
-    $('adN').value=$('cRn').textContent;$('adP').value='';
-    $('adLnk').value=rLn(cR);$('ghT').textContent=isGh?'Visible Again':'Go Invisible';
-  }
-  _oM(n);
-};
+const _oM=oM;window.oM=function(n){if(n==='ad'&&isAd){$('adN').value=$('cRn').textContent;$('adP').value='';$('adLnk').value=rLink(curR);$('ghTxt').textContent=isGh?'Visible Again':'Go Invisible';}_oM(n);};
 
 // ── Nav ──
-function leaveR(){
-  if(cR)S.disconnect().connect();
-  cR=null;isAd=false;isGh=false;myU=null;capPh=null;pJn=null;
-  $('sb').classList.remove('on');$('sbOv').classList.remove('on');
-  sV('vL');
-}
-function goL(){
-  cM('jn');cR=null;isAd=false;isGh=false;myU=null;capPh=null;pJn=null;
-  S.disconnect().connect();history.replaceState(null,'',location.pathname);
-  $('sb').classList.remove('on');$('sbOv').classList.remove('on');
-  sV('vL');
-}
+function leaveR(){if(curR)S.disconnect().connect();curR=null;isAd=false;isGh=false;myU=null;pJn=null;sV('vL');}
+function goL(){cM('jn');curR=null;isAd=false;isGh=false;myU=null;pJn=null;S.disconnect().connect();history.replaceState(null,'',location.pathname);sV('vL');}
 
 // ── Socket ──
 S.on('lobby',renL);
-S.on('message',m=>{appM(m,true);scrB();});
-S.on('deleteMsg',id=>{for(const e of $('cMsgs').children)if(e._mid===id){e.classList.add('x');break;}});
+S.on('message',m=>{
+  const wasNear=isNearBottom();
+  appM(m);
+  const mine=m.type==='msg'&&m.from===myU;
+  if(wasNear||mine){scrB();unread=0;updateJumpBtn();}
+  else if(m.type==='msg'){unread++;updateJumpBtn();}
+  if(m.type==='msg'&&!mine){sndRecv();flashTitle();}
+  else if(m.type==='system'){
+    if(m.text.endsWith('joined'))sndJoin();
+    else if(m.text.endsWith('left'))sndLeave();
+  }
+});
+S.on('deleteMsg',id=>{for(const e of $('cMsgs').children)if(e._mid===id){e.classList.add('msg-del');break;}});
 S.on('clearChat',()=>{$('cMsgs').innerHTML='';});
 S.on('userlist',us=>{renU(us);updMC(us);});
 S.on('adminUserlist',us=>{renAU(us);const me=us.find(u=>u.email===myE);if(me)myU=me.username;});
-S.on('typing',u=>{
-  const e=$('tyI');
-  e.innerHTML='<span class="td"></span><span class="td"></span><span class="td"></span> <span style="margin-left:2px">'+esc(u)+' is typing...</span>';
-  clearTimeout(typTO);typTO=setTimeout(()=>{e.innerHTML='';},2500);
-});
-S.on('settingsUpdated',s=>{
-  $('cRn').textContent=s.roomName;
-  if(isAd){$('adN').value=s.roomName;$('adP').value=s.joinPassword||'';}
-});
-S.on('kicked',()=>{$('mKk').classList.add('on');});
-S.on('roomClosed',d=>{$('clN').textContent='"'+d.name+'" has been closed.';$('mCl').classList.add('on');});
+S.on('typing',u=>{const e=$('typI');e.innerHTML='<span class="typ-d"></span><span class="typ-d"></span><span class="typ-d"></span> <span style="margin-left:3px">'+esc(u)+' is typing...</span>';clearTimeout(typTO);typTO=setTimeout(()=>{e.innerHTML='';},2500);});
+S.on('settingsUpdated',s=>{$('cRn').textContent=s.roomName;if(isAd){$('adN').value=s.roomName;$('adP').value=s.joinPassword||'';}});
+S.on('kicked',()=>{sndAlert();$('mKk').classList.add('on');});
+S.on('roomClosed',d=>{sndAlert();$('clN').textContent='"'+d.name+'" has been closed.';$('mCl').classList.add('on');});
 
-// Close modals on overlay click / Escape
-document.querySelectorAll('.mov').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o&&o.id!=='mKk'&&o.id!=='mCl'&&o.id!=='mCf')o.classList.remove('on');});
-});
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    // Close sidebar first on mobile
-    if($('sb').classList.contains('on')){togSb();return;}
-    document.querySelectorAll('.mov.on').forEach(m=>{
-      if(m.id!=='mKk'&&m.id!=='mCl'&&m.id!=='mCf')m.classList.remove('on');
-    });
-  }
-});
+document.querySelectorAll('.mov').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o&&o.id!=='mKk'&&o.id!=='mCl'&&o.id!=='mCf')o.classList.remove('on');});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.mov.on').forEach(m=>{if(m.id!=='mKk'&&m.id!=='mCl'&&m.id!=='mCf')m.classList.remove('on');});});
 
 // ── Init ──
 (function(){
@@ -762,10 +649,10 @@ document.addEventListener('keydown',e=>{
   if(rp){
     const rid=rp.trim().toUpperCase();
     fetch('/api/room/'+rid).then(r=>r.json()).then(i=>{
-      if(!i.exists)shAllow({error:'This room does not exist or was deleted.'});
-      else if(i.closed)shAllow({error:'This room has been closed.'});
-      else shAllow(i);
-    }).catch(()=>shAllow({error:'Could not load room info.'}));
+      if(!i.exists)showAllow({error:'This room does not exist or was deleted.'});
+      else if(i.closed)showAllow({error:'This room has been closed.'});
+      else showAllow(i);
+    }).catch(()=>showAllow({error:'Could not load room info.'}));
   }else sV('vL');
 })();
 setInterval(svK,10000);
