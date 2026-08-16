@@ -12,7 +12,6 @@
 tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Space Grotesk','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']}}}}
 </script>
 <style>
-/* ═══ TOKENS ═══ */
 :root{
   --bg:#09090f;--sf:#111118;--sf2:#18181f;--sf3:#20202b;--sf4:#282838;
   --bd:#222236;--bd2:#2c2c42;
@@ -28,8 +27,6 @@ html.light{
   --tx:#12122a;--tx2:#484862;--tx3:#78788e;--tx4:#a4a4ba;
   --sh:0 2px 12px rgba(0,0,0,.04);--sh2:0 8px 32px rgba(0,0,0,.07)
 }
-
-/* ═══ BASE ═══ */
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--tx);transition:background .5s,color .4s;-webkit-font-smoothing:antialiased}
@@ -39,7 +36,6 @@ input,textarea,button{font-family:inherit}
 ::-webkit-scrollbar-thumb:hover{background:var(--tx4)}
 ::selection{background:rgba(var(--aR),.2);color:var(--tx)}
 
-/* ═══ ANIMATIONS ═══ */
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -60,7 +56,6 @@ input,textarea,button{font-family:inherit}
 .a-sys{animation:sysIn .25s cubic-bezier(.22,1,.36,1) both}
 .a-fade{animation:fadeUp .3s cubic-bezier(.22,1,.36,1) both}
 
-/* ═══ BACKGROUND ═══ */
 .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(ellipse 600px 400px at 12% 18%,rgba(var(--aR),.035) 0%,transparent 70%),
   radial-gradient(ellipse 450px 500px at 88% 82%,rgba(var(--aR),.02) 0%,transparent 70%);
@@ -68,13 +63,11 @@ input,textarea,button{font-family:inherit}
 html.light .bg-layer{opacity:.4}
 .dot{position:fixed;border-radius:50%;pointer-events:none;z-index:0;background:rgba(var(--aR),.12);animation:gFloat 8s ease-in-out infinite}
 
-/* ═══ INPUTS ═══ */
 .ipt{width:100%;padding:9px 12px;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r2);color:var(--tx);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s,background .3s}
 .ipt::placeholder{color:var(--tx4)}
 .ipt:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(var(--aR),.08)}
 .ipt:hover:not(:focus){border-color:var(--bd2)}
 
-/* ═══ BUTTONS ═══ */
 .bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--r2);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s cubic-bezier(.22,1,.36,1);white-space:nowrap;user-select:none;flex-shrink:0}
 .bt:active:not(:disabled){transform:scale(.95)}
 .bt:disabled{opacity:.3;cursor:not-allowed}
@@ -86,14 +79,12 @@ html.light .bg-layer{opacity:.4}
 .bt-d:hover:not(:disabled){background:rgba(var(--dR),.14)}
 .bt-i{width:36px;height:36px;padding:0;border-radius:var(--r2)}
 
-/* ═══ ROOM CARDS ═══ */
 .rc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r3);padding:16px;cursor:pointer;position:relative;overflow:hidden;transition:all .25s cubic-bezier(.22,1,.36,1)}
 .rc::after{content:'';position:absolute;inset:0;border-radius:var(--r3);background:linear-gradient(135deg,rgba(var(--aR),.03) 0%,transparent 50%);opacity:0;transition:opacity .25s;pointer-events:none}
 .rc:hover{transform:translateY(-2px);border-color:rgba(var(--aR),.22);box-shadow:var(--sh2)}
 .rc:hover::after{opacity:1}
 .rc:active{transform:translateY(-1px);transition-duration:.08s}
 
-/* ═══ MESSAGES ═══ */
 .m-row{display:flex;gap:8px;align-items:flex-start;padding:1px 0}
 .m-row.self{flex-direction:row-reverse}
 .m-row.grp{margin-top:-1px;padding-top:0}
@@ -119,8 +110,6 @@ html.light .bg-layer{opacity:.4}
 .m-ab:hover{color:var(--ac);background:rgba(var(--aR),.1)}
 .m-sys{text-align:center;padding:2px 0}
 .m-sys span{font-size:11px;color:var(--tx4);background:var(--sf2);padding:2px 12px;border-radius:16px;border:1px solid var(--bd);display:inline-block}
-
-/* Reactions */
 .r-bar{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
 .r-chip{display:inline-flex;align-items:center;gap:2px;padding:1px 6px;background:var(--sf3);border:1px solid var(--bd);border-radius:16px;font-size:12px;cursor:pointer;transition:all .12s;user-select:none;line-height:1.7}
 .r-chip:hover{border-color:var(--ac);background:rgba(var(--aR),.06)}
@@ -130,23 +119,17 @@ html.light .bg-layer{opacity:.4}
 .r-pick.show{display:flex;animation:fadeUp .12s ease}
 .r-pick button{width:30px;height:30px;border:none;background:transparent;border-radius:var(--r1);font-size:16px;cursor:pointer;transition:all .1s;display:flex;align-items:center;justify-content:center}
 .r-pick button:hover{background:var(--sf2);transform:scale(1.2)}
-
-/* Typing */
 .typ-d{display:inline-flex;gap:3px;align-items:center}
 .typ-d span{width:4px;height:4px;border-radius:50%;background:var(--tx3);animation:dotB 1.2s ease-in-out infinite}
 .typ-d span:nth-child(2){animation-delay:.15s}
 .typ-d span:nth-child(3){animation-delay:.3px}
 .on-dot{width:6px;height:6px;border-radius:50%;background:var(--ac);display:inline-block;flex-shrink:0}
 .on-dot.live{animation:pulse 2s ease infinite}
-
-/* ═══ MODALS ═══ */
 .mo{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:16px}
 .mo.show{display:flex}
 .mo-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r4);padding:20px;width:100%;max-width:400px;box-shadow:var(--sh2);animation:fadeUp .28s cubic-bezier(.22,1,.36,1);max-height:85vh;overflow-y:auto}
 .mo-x{background:none;border:none;color:var(--tx3);cursor:pointer;width:28px;height:28px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .12s;flex-shrink:0}
 .mo-x:hover{background:var(--sf2);color:var(--tx)}
-
-/* Verify */
 .vf-ring{width:90px;height:90px;margin:0 auto 14px;position:relative;border-radius:50%}
 .vf-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid var(--bd)}
 .vf-ring::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid transparent;border-top-color:var(--ac);border-right-color:rgba(var(--aR),.3);animation:ring 1s linear infinite}
@@ -155,8 +138,6 @@ html.light .bg-layer{opacity:.4}
 .vf-ico{font-size:24px;color:var(--ac);z-index:1}
 .vf-bar{width:100%;height:3px;background:var(--sf3);border-radius:4px;margin-top:10px;overflow:hidden}
 .vf-fill{height:100%;background:linear-gradient(90deg,var(--ac3),var(--ac),var(--ac2));border-radius:4px;width:0%;transition:width .2s ease}
-
-/* ═══ ADMIN PANEL ═══ */
 .ap{position:fixed;top:0;right:0;bottom:0;width:300px;background:var(--sf);border-left:1px solid var(--bd);z-index:80;transform:translateX(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.2)}
 .ap.open{transform:translateX(0)}
 .ap-bd{position:fixed;inset:0;z-index:79;background:rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .25s}
@@ -166,8 +147,6 @@ html.light .bg-layer{opacity:.4}
 .at:hover:not(.on){color:var(--tx3)}
 .ap-row{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px;transition:background .12s}
 .ap-row:hover{background:var(--sf2)}
-
-/* ═══ TOASTS ═══ */
 .t-wrap{position:fixed;top:10px;right:10px;z-index:200;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .t{padding:9px 12px 9px 10px;border-radius:var(--r2);font-size:12px;font-weight:500;background:var(--sf);border:1px solid var(--bd);color:var(--tx);box-shadow:var(--sh2);display:flex;align-items:center;gap:8px;max-width:320px;pointer-events:auto;animation:toastIn .3s cubic-bezier(.22,1,.36,1) both}
 .t.out{animation:toastOut .2s ease both}
@@ -175,13 +154,9 @@ html.light .bg-layer{opacity:.4}
 .t.ok{border-left:3px solid var(--ac)}.t.ok i{color:var(--ac)}
 .t.er{border-left:3px solid rgb(var(--dR))}.t.er i{color:rgb(var(--dR))}
 .t.inf{border-left:3px solid rgb(var(--iR))}.t.inf i{color:rgb(var(--iR))}
-
-/* ═══ PINNED ═══ */
 .pin-b{padding:6px 14px;background:rgba(var(--aR),.04);border-bottom:1px solid rgba(var(--aR),.08);font-size:11px;color:var(--tx3);display:none;align-items:center;gap:7px;cursor:pointer;transition:background .15s}
 .pin-b:hover{background:rgba(var(--aR),.07)}
 .pin-b.show{display:flex}
-
-/* ═══ CHAT INPUT ═══ */
 .ci-wrap{padding:8px 12px 10px;background:var(--sf);border-top:1px solid var(--bd);transition:background .3s}
 .ci-ta{width:100%;resize:none;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r2);padding:9px 42px 9px 12px;color:var(--tx);font-size:14px;outline:none;max-height:100px;min-height:38px;line-height:1.5;transition:border-color .2s,box-shadow .2s}
 .ci-ta::placeholder{color:var(--tx4)}
@@ -222,63 +197,33 @@ html.light .bg-layer{opacity:.4}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lbl{font-size:11px;font-weight:600;color:var(--tx3);margin-bottom:3px;display:block;letter-spacing:.2px}
 .err{color:rgb(var(--dR));font-size:12px;display:none;margin-top:1px}
+.load-more{width:100%;padding:14px;text-align:center}
+.load-more button{background:var(--sf2);border:1px solid var(--bd);color:var(--tx2);padding:8px 24px;border-radius:var(--r2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.load-more button:hover{border-color:var(--ac);color:var(--ac);background:rgba(var(--aR),.04)}
+.lobby-stats{font-size:10px;color:var(--tx4);padding:8px 0 4px;text-align:center;letter-spacing:.2px}
 
-/* ═══ RESPONSIVE — TABLET ═══ */
-@media(max-width:768px){
-  .rc{padding:14px}
-  .m-body{max-width:78%}
-  .ap{width:280px}
-  .mo-box{padding:18px}
-  .m-acts{opacity:.4;pointer-events:auto}
-}
-
-/* ═══ RESPONSIVE — MOBILE ═══ */
+@media(max-width:768px){.rc{padding:14px}.m-body{max-width:78%}.ap{width:280px}.mo-box{padding:18px}.m-acts{opacity:.4;pointer-events:auto}}
 @media(max-width:480px){
   .f-row{grid-template-columns:1fr;gap:8px}
-  .m-body{max-width:85%}
-  .m-bub{padding:8px 11px;font-size:13px;border-radius:10px}
-  .m-av{width:28px;height:28px;font-size:11px;margin-top:14px}
-  .m-row{gap:7px}
-  .m-acts{opacity:.4;pointer-events:auto}
-  .m-ab{width:26px;height:26px}
-  .ap{width:100%}
-  .ap-bd{display:none}
+  .m-body{max-width:85%}.m-bub{padding:8px 11px;font-size:13px;border-radius:10px}
+  .m-av{width:28px;height:28px;font-size:11px;margin-top:14px}.m-row{gap:7px}
+  .m-acts{opacity:.4;pointer-events:auto}.m-ab{width:26px;height:26px}
+  .ap{width:100%}.ap-bd{display:none}
   .rc{padding:12px 14px;border-radius:var(--r2)}
-  .mo-box{padding:16px;max-width:none;border-radius:var(--r3)}
-  .mo{padding:12px}
-  .ci-wrap{padding:6px 10px 8px}
-  .ci-ta{padding:8px 38px 8px 10px;font-size:14px;min-height:36px}
+  .mo-box{padding:16px;max-width:none;border-radius:var(--r3)}.mo{padding:12px}
+  .ci-wrap{padding:6px 10px 8px}.ci-ta{padding:8px 38px 8px 10px;font-size:14px;min-height:36px}
   .ci-send{width:26px;height:26px;right:5px;bottom:5px;font-size:10px}
-  .ia-b{padding:3px 7px;font-size:10px}
-  .em-bar button{width:26px;height:26px;font-size:13px}
+  .ia-b{padding:3px 7px;font-size:10px}.em-bar button{width:26px;height:26px;font-size:13px}
   .t{max-width:calc(100vw - 20px);font-size:11px;padding:8px 10px 8px 8px}
   .cs{bottom:6px;left:6px;padding:2px 6px;font-size:8px}
   .sc-btn{bottom:56px;right:10px;width:28px;height:28px;font-size:10px}
-  .pin-b{padding:5px 10px;font-size:10px}
-  .r-pick{width:170px;right:-4px}
-  .r-pick button{width:28px;height:28px;font-size:14px}
-  .hide-sm{display:none!important}
-  .vf-ring{width:80px;height:80px}
-  .vf-ico{font-size:20px}
-  .cap-g{grid-template-columns:repeat(3,1fr);gap:2px}
-  .at{font-size:8px;padding:8px 2px}
-  .ap-row{padding:8px 10px;gap:7px}
-  .chat-empty{padding:32px 16px}
-  .chat-empty i{font-size:28px}
-  .chat-empty p{font-size:11px}
+  .pin-b{padding:5px 10px;font-size:10px}.r-pick{width:170px;right:-4px}.r-pick button{width:28px;height:28px;font-size:14px}
+  .hide-sm{display:none!important}.vf-ring{width:80px;height:80px}.vf-ico{font-size:20px}
+  .cap-g{grid-template-columns:repeat(3,1fr);gap:2px}.at{font-size:8px;padding:8px 2px}
+  .ap-row{padding:8px 10px;gap:7px}.chat-empty{padding:32px 16px}.chat-empty i{font-size:28px}.chat-empty p{font-size:11px}
   .msg-rc-img{max-height:180px}
 }
-
-/* ═══ RESPONSIVE — TINY ═══ */
-@media(max-width:360px){
-  .bt{padding:7px 10px;font-size:12px;gap:4px}
-  .bt-i{width:32px;height:32px}
-  .hide-xs{display:none!important}
-  .m-body{max-width:90%}
-  .m-bub{font-size:13px}
-  .r-chip{font-size:11px;padding:0px 5px}
-}
-
+@media(max-width:360px){.bt{padding:7px 10px;font-size:12px;gap:4px}.bt-i{width:32px;height:32px}.hide-xs{display:none!important}.m-body{max-width:90%}.m-bub{font-size:13px}.r-chip{font-size:11px;padding:0px 5px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -289,187 +234,48 @@ html.light .bg-layer{opacity:.4}
 <div class="cs off" id="cs"><div class="cd"></div><span id="csT">Connecting</span></div>
 <div class="iov" id="imgOv"><img id="imgS" src="" alt="Preview"></div>
 
-<!-- VERIFY -->
-<div class="mo" id="vMod" style="z-index:110">
-  <div class="mo-box" style="text-align:center;max-width:280px">
-    <div class="vf-ring"><div class="vf-inner"><div class="vf-scan"></div><i class="fas fa-fingerprint vf-ico"></i></div></div>
-    <h3 style="font-size:14px;font-weight:700;margin-bottom:3px">Verifying Identity</h3>
-    <p style="font-size:11px;color:var(--tx3);margin-bottom:1px">Scanning biometric data...</p>
-    <p style="font-size:9px;color:var(--tx4);margin-bottom:10px" id="vSt">Initializing camera</p>
-    <div class="vf-bar"><div class="vf-fill" id="vBar"></div></div>
-  </div>
-</div>
+<div class="mo" id="vMod" style="z-index:110"><div class="mo-box" style="text-align:center;max-width:280px"><div class="vf-ring"><div class="vf-inner"><div class="vf-scan"></div><i class="fas fa-fingerprint vf-ico"></i></div></div><h3 style="font-size:14px;font-weight:700;margin-bottom:3px">Verifying Identity</h3><p style="font-size:11px;color:var(--tx3);margin-bottom:1px">Scanning biometric data...</p><p style="font-size:9px;color:var(--tx4);margin-bottom:10px" id="vSt">Initializing camera</p><div class="vf-bar"><div class="vf-fill" id="vBar"></div></div></div></div>
 
-<!-- CONFIRM -->
-<div class="mo" id="cfMod">
-  <div class="mo-box" style="text-align:center;max-width:300px">
-    <div style="width:40px;height:40px;border-radius:50%;background:rgba(var(--wR),.07);display:flex;align-items:center;justify-content:center;margin:0 auto 10px"><i class="fas fa-triangle-exclamation" style="color:rgb(var(--wR));font-size:16px"></i></div>
-    <h3 style="font-size:14px;font-weight:700;margin-bottom:3px" id="cfT">Are you sure?</h3>
-    <p style="font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.5" id="cfP"></p>
-    <div style="display:flex;gap:8px">
-      <button class="bt bt-g" style="flex:1;justify-content:center" data-cfm="0">Cancel</button>
-      <button class="bt bt-d" style="flex:1;justify-content:center" id="cfA" data-cfm="1">Confirm</button>
-    </div>
-  </div>
-</div>
+<div class="mo" id="cfMod"><div class="mo-box" style="text-align:center;max-width:300px"><div style="width:40px;height:40px;border-radius:50%;background:rgba(var(--wR),.07);display:flex;align-items:center;justify-content:center;margin:0 auto 10px"><i class="fas fa-triangle-exclamation" style="color:rgb(var(--wR));font-size:16px"></i></div><h3 style="font-size:14px;font-weight:700;margin-bottom:3px" id="cfT">Are you sure?</h3><p style="font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.5" id="cfP"></p><div style="display:flex;gap:8px"><button class="bt bt-g" style="flex:1;justify-content:center" data-cfm="0">Cancel</button><button class="bt bt-d" style="flex:1;justify-content:center" id="cfA" data-cfm="1">Confirm</button></div></div></div>
 
-<!-- CREATE -->
-<div class="mo" id="crMod">
-  <div class="mo-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:15px;font-weight:700">Create a Room</h3>
-      <button class="mo-x" data-close="crMod" aria-label="Close"><i class="fas fa-xmark"></i></button>
-    </div>
-    <form id="crF" style="display:flex;flex-direction:column;gap:10px">
-      <div><label class="lbl">Room Name</label><input class="ipt" id="cRn" placeholder="My Awesome Room" required maxlength="50"></div>
-      <div class="f-row">
-        <div><label class="lbl">Your Name</label><input class="ipt" id="cUn" placeholder="Display name" required maxlength="24"></div>
-        <div><label class="lbl">Email</label><input class="ipt" id="cEm" type="email" placeholder="you@mail.com" required></div>
-      </div>
-      <div><label class="lbl">Admin Password</label><input class="ipt" id="cAp" type="password" placeholder="To manage the room" required></div>
-      <div><label class="lbl">Room Password <span style="color:var(--tx4)">(optional)</span></label><input class="ipt" id="cRp" type="password" placeholder="Leave empty for public"></div>
-      <div class="err" id="cEr"></div>
-      <button type="submit" class="bt bt-p" style="width:100%;justify-content:center;margin-top:2px" id="cBt"><i class="fas fa-plus"></i> Create Room</button>
-    </form>
-  </div>
-</div>
+<div class="mo" id="crMod"><div class="mo-box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:15px;font-weight:700">Create a Room</h3><button class="mo-x" data-close="crMod" aria-label="Close"><i class="fas fa-xmark"></i></button></div><form id="crF" style="display:flex;flex-direction:column;gap:10px"><div><label class="lbl">Room Name</label><input class="ipt" id="cRn" placeholder="My Awesome Room" required maxlength="50"></div><div class="f-row"><div><label class="lbl">Your Name</label><input class="ipt" id="cUn" placeholder="Display name" required maxlength="24"></div><div><label class="lbl">Email</label><input class="ipt" id="cEm" type="email" placeholder="you@mail.com" required></div></div><div><label class="lbl">Admin Password</label><input class="ipt" id="cAp" type="password" placeholder="To manage the room" required></div><div><label class="lbl">Room Password <span style="color:var(--tx4)">(optional)</span></label><input class="ipt" id="cRp" type="password" placeholder="Leave empty for public"></div><div class="err" id="cEr"></div><button type="submit" class="bt bt-p" style="width:100%;justify-content:center;margin-top:2px" id="cBt"><i class="fas fa-plus"></i> Create Room</button></form></div></div>
 
-<!-- JOIN -->
-<div class="mo" id="jMod">
-  <div class="mo-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:15px;font-weight:700">Join Room</h3>
-      <button class="mo-x" data-close="jMod" aria-label="Close"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div style="padding:9px 12px;background:var(--sf2);border-radius:var(--r2);margin-bottom:12px;display:flex;align-items:center;gap:9px;border:1px solid var(--bd)">
-      <div style="width:30px;height:30px;border-radius:var(--r1);background:rgba(var(--aR),.07);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-door-open" style="color:var(--ac);font-size:11px"></i></div>
-      <div style="min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="jRn"></div><div style="font-size:9px;color:var(--tx4);font-family:'JetBrains Mono',monospace" id="jRi"></div></div>
-    </div>
-    <form id="jF" style="display:flex;flex-direction:column;gap:10px">
-      <div class="f-row">
-        <div><label class="lbl">Your Name</label><input class="ipt" id="jUn" placeholder="Display name" required maxlength="24"></div>
-        <div><label class="lbl">Email</label><input class="ipt" id="jEm" type="email" placeholder="you@mail.com" required></div>
-      </div>
-      <div id="jPw" style="display:none"><label class="lbl">Room Password</label><input class="ipt" id="jPa" type="password" placeholder="Enter room password"></div>
-      <div class="err" id="jEr"></div>
-      <button type="submit" class="bt bt-p" style="width:100%;justify-content:center;margin-top:2px" id="jBt"><i class="fas fa-arrow-right-to-bracket"></i> Join Room</button>
-    </form>
-  </div>
-</div>
+<div class="mo" id="jMod"><div class="mo-box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:15px;font-weight:700">Join Room</h3><button class="mo-x" data-close="jMod" aria-label="Close"><i class="fas fa-xmark"></i></button></div><div style="padding:9px 12px;background:var(--sf2);border-radius:var(--r2);margin-bottom:12px;display:flex;align-items:center;gap:9px;border:1px solid var(--bd)"><div style="width:30px;height:30px;border-radius:var(--r1);background:rgba(var(--aR),.07);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-door-open" style="color:var(--ac);font-size:11px"></i></div><div style="min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="jRn"></div><div style="font-size:9px;color:var(--tx4);font-family:'JetBrains Mono',monospace" id="jRi"></div></div></div><form id="jF" style="display:flex;flex-direction:column;gap:10px"><div class="f-row"><div><label class="lbl">Your Name</label><input class="ipt" id="jUn" placeholder="Display name" required maxlength="24"></div><div><label class="lbl">Email</label><input class="ipt" id="jEm" type="email" placeholder="you@mail.com" required></div></div><div id="jPw" style="display:none"><label class="lbl">Room Password</label><input class="ipt" id="jPa" type="password" placeholder="Enter room password"></div><div class="err" id="jEr"></div><button type="submit" class="bt bt-p" style="width:100%;justify-content:center;margin-top:2px" id="jBt"><i class="fas fa-arrow-right-to-bracket"></i> Join Room</button></form></div></div>
 
-<!-- REJOIN -->
-<div class="mo" id="rjMod">
-  <div class="mo-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:15px;font-weight:700">Rejoin as Host</h3>
-      <button class="mo-x" data-close="rjMod" aria-label="Close"><i class="fas fa-xmark"></i></button>
-    </div>
-    <form id="rjF" style="display:flex;flex-direction:column;gap:10px">
-      <div><label class="lbl">Creator Email</label><input class="ipt" id="rEm" type="email" placeholder="you@mail.com" required></div>
-      <div><label class="lbl">Admin Password</label><input class="ipt" id="rPa" type="password" placeholder="Admin password" required></div>
-      <div class="err" id="rEr"></div>
-      <button type="submit" class="bt bt-p" style="width:100%;justify-content:center;margin-top:2px" id="rBt"><i class="fas fa-crown"></i> Rejoin as Host</button>
-    </form>
-  </div>
-</div>
+<div class="mo" id="rjMod"><div class="mo-box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:15px;font-weight:700">Rejoin as Host</h3><button class="mo-x" data-close="rjMod" aria-label="Close"><i class="fas fa-xmark"></i></button></div><form id="rjF" style="display:flex;flex-direction:column;gap:10px"><div><label class="lbl">Creator Email</label><input class="ipt" id="rEm" type="email" placeholder="you@mail.com" required></div><div><label class="lbl">Admin Password</label><input class="ipt" id="rPa" type="password" placeholder="Admin password" required></div><div class="err" id="rEr"></div><button type="submit" class="bt bt-p" style="width:100%;justify-content:center;margin-top:2px" id="rBt"><i class="fas fa-crown"></i> Rejoin as Host</button></form></div></div>
 
-<!-- ADMIN -->
 <div class="ap-bd" id="apBd"></div>
-<div class="ap" id="apPn">
-  <div style="padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">
-    <h3 style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px"><i class="fas fa-shield-halved" style="color:var(--ac)"></i>Admin</h3>
-    <button class="mo-x" id="apClose" aria-label="Close"><i class="fas fa-xmark"></i></button>
-  </div>
-  <div style="display:flex;border-bottom:1px solid var(--bd)">
-    <div class="at on" data-tab="members">Members</div>
-    <div class="at" data-tab="settings">Settings</div>
-    <div class="at" data-tab="captures"><i class="fas fa-eye" style="margin-right:1px"></i>Logs</div>
-  </div>
-  <div style="flex:1;overflow-y:auto" id="apCt"></div>
-</div>
+<div class="ap" id="apPn"><div style="padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px"><i class="fas fa-shield-halved" style="color:var(--ac)"></i>Admin</h3><button class="mo-x" id="apClose" aria-label="Close"><i class="fas fa-xmark"></i></button></div><div style="display:flex;border-bottom:1px solid var(--bd)"><div class="at on" data-tab="members">Members</div><div class="at" data-tab="settings">Settings</div><div class="at" data-tab="captures"><i class="fas fa-eye" style="margin-right:1px"></i>Logs</div></div><div style="flex:1;overflow-y:auto" id="apCt"></div></div>
 
-<!-- ═══ APP ═══ -->
 <div id="app" style="position:relative;z-index:1;height:100vh;display:flex;flex-direction:column">
-
-  <!-- LOBBY -->
   <div id="lV" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
     <header style="padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--sf);display:flex;align-items:center;gap:10px;flex-shrink:0;transition:background .4s;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <div style="width:32px;height:32px;border-radius:var(--r2);background:linear-gradient(135deg,var(--ac),var(--ac3));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;box-shadow:0 2px 8px rgba(var(--aR),.2)">F</div>
-        <div class="hide-xs"><div style="font-weight:700;font-size:14px;line-height:1.2;letter-spacing:-.2px">Freedom Chat</div><div style="font-size:9px;color:var(--tx4);font-weight:500">Private &middot; Encrypted</div></div>
-      </div>
-      <div style="flex:1;min-width:100px;max-width:260px;order:10" id="searchW">
-        <div style="position:relative"><i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx4);font-size:10px"></i><input class="ipt" id="sInp" placeholder="Search rooms..." style="padding-left:28px;font-size:12px;padding-top:7px;padding-bottom:7px"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:auto;order:11">
-        <button class="bt bt-g bt-i" id="thBtn" title="Toggle theme" aria-label="Toggle theme"><i class="fas fa-moon" id="thIco"></i></button>
-        <button class="bt bt-g bt-i" id="snBtn" title="Toggle sound" aria-label="Toggle sound"><i class="fas fa-volume-high" id="snIco"></i></button>
-        <button class="bt bt-p" id="crBtn" style="padding:7px 14px"><i class="fas fa-plus"></i><span class="hide-sm"> Create</span></button>
-      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><div style="width:32px;height:32px;border-radius:var(--r2);background:linear-gradient(135deg,var(--ac),var(--ac3));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;box-shadow:0 2px 8px rgba(var(--aR),.2)">F</div><div class="hide-xs"><div style="font-weight:700;font-size:14px;line-height:1.2;letter-spacing:-.2px">Freedom Chat</div><div style="font-size:9px;color:var(--tx4);font-weight:500">Private &middot; Encrypted</div></div></div>
+      <div style="flex:1;min-width:100px;max-width:260px;order:10" id="searchW"><div style="position:relative"><i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx4);font-size:10px"></i><input class="ipt" id="sInp" placeholder="Search rooms..." style="padding-left:28px;font-size:12px;padding-top:7px;padding-bottom:7px"></div></div>
+      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:auto;order:11"><button class="bt bt-g bt-i" id="thBtn" title="Toggle theme" aria-label="Toggle theme"><i class="fas fa-moon" id="thIco"></i></button><button class="bt bt-g bt-i" id="snBtn" title="Toggle sound" aria-label="Toggle sound"><i class="fas fa-volume-high" id="snIco"></i></button><button class="bt bt-p" id="crBtn" style="padding:7px 14px"><i class="fas fa-plus"></i><span class="hide-sm"> Create</span></button></div>
     </header>
     <main style="flex:1;overflow-y:auto;padding:16px" id="lMain">
-      <div id="lEmpty" style="display:none;text-align:center;padding:60px 20px">
-        <div style="width:52px;height:52px;border-radius:14px;background:rgba(var(--aR),.05);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><i class="fas fa-comments" style="font-size:22px;color:var(--ac);opacity:.35"></i></div>
-        <h2 style="font-size:16px;font-weight:700;margin-bottom:5px;color:var(--tx2)">No Rooms Yet</h2>
-        <p style="color:var(--tx4);font-size:12px;margin-bottom:20px;line-height:1.5">Be the first to create a room and start chatting.</p>
-        <button class="bt bt-p" id="crBtn2"><i class="fas fa-plus"></i> Create a Room</button>
-      </div>
-      <div id="rGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
-        <div class="skel"></div><div class="skel"></div><div class="skel"></div>
-      </div>
+      <div id="lEmpty" style="display:none;text-align:center;padding:60px 20px"><div style="width:52px;height:52px;border-radius:14px;background:rgba(var(--aR),.05);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><i class="fas fa-comments" style="font-size:22px;color:var(--ac);opacity:.35"></i></div><h2 style="font-size:16px;font-weight:700;margin-bottom:5px;color:var(--tx2)">No Rooms Yet</h2><p style="color:var(--tx4);font-size:12px;margin-bottom:20px;line-height:1.5">Be the first to create a room and start chatting.</p><button class="bt bt-p" id="crBtn2"><i class="fas fa-plus"></i> Create a Room</button></div>
+      <div class="lobby-stats" id="lStats" style="display:none"></div>
+      <div id="rGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      <div id="loadMore" class="load-more" style="display:none"><button id="lmBtn"><i class="fas fa-chevron-down"></i> Load More Rooms</button></div>
       <div id="shNote" style="text-align:center;padding:12px;font-size:9px;color:var(--tx4);display:none;letter-spacing:.4px"><i class="fas fa-shuffle" style="margin-right:3px"></i>ROOMS SHUFFLE RANDOMLY ON EACH VISIT</div>
     </main>
   </div>
 
-  <!-- ROOM -->
   <div id="rV" style="flex:1;display:none;flex-direction:column;overflow:hidden">
-    <header style="padding:8px 10px;border-bottom:1px solid var(--bd);background:var(--sf);display:flex;align-items:center;gap:6px;flex-shrink:0;transition:background .4s;min-height:48px">
-      <button class="bt bt-g bt-i" id="backBtn" title="Back" aria-label="Back to lobby"><i class="fas fa-arrow-left"></i></button>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px" id="rTtl">Room</div>
-        <div style="font-size:9px;color:var(--tx4);display:flex;align-items:center;gap:6px">
-          <span id="rDisp" style="font-family:'JetBrains Mono',monospace"></span>
-          <span style="display:flex;align-items:center;gap:3px"><span class="on-dot live" id="onDot"></span><span id="mCnt">0</span> online</span>
-        </div>
-      </div>
-      <button class="bt bt-g" style="padding:6px 8px;font-size:10px;display:none" id="rjBtn" title="Rejoin as host" aria-label="Rejoin as host"><i class="fas fa-crown" style="color:rgb(var(--wR))"></i></button>
-      <button class="bt bt-g bt-i" style="display:none" id="adBtn" title="Admin panel" aria-label="Admin panel"><i class="fas fa-shield-halved" style="color:var(--ac)"></i></button>
-    </header>
-    <div class="pin-b" id="pinB">
-      <i class="fas fa-thumbtack" style="color:var(--ac);flex-shrink:0;font-size:10px"></i>
-      <span id="pinT" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-      <button class="mo-x" style="width:20px;height:20px;font-size:9px" id="pinX" aria-label="Unpin"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div style="flex:1;overflow-y:auto;position:relative;display:flex;flex-direction:column" id="mWrap">
-      <div id="msgs" style="padding:10px 12px 2px;display:flex;flex-direction:column;gap:1px;flex:1"></div>
-      <button class="sc-btn" id="scBtn" aria-label="Scroll to bottom"><i class="fas fa-chevron-down"></i></button>
-    </div>
-    <div id="typB" style="padding:1px 12px;font-size:10px;color:var(--tx3);min-height:20px;display:flex;align-items:center;gap:5px;transition:opacity .2s;opacity:0">
-      <div class="typ-d"><span></span><span></span><span></span></div><span id="typT"></span>
-    </div>
-    <div class="ci-wrap">
-      <div class="rp-prev" id="rpPrev">
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0"><i class="fas fa-reply" style="color:var(--ac);margin-right:3px"></i><span id="rpN"></span>: <span id="rpT2" style="color:var(--tx4)"></span></span>
-        <button class="rp-x" id="rpX" aria-label="Cancel reply"><i class="fas fa-xmark"></i></button>
-      </div>
-      <div style="position:relative">
-        <textarea class="ci-ta" id="cInp" placeholder="Type a message..." rows="1"></textarea>
-        <button class="ci-send" id="sBtn" disabled aria-label="Send"><i class="fas fa-paper-plane"></i></button>
-      </div>
-      <div class="ia">
-        <button class="ia-b" id="imgBtn" type="button"><i class="fas fa-image"></i> Photo</button>
-        <button class="ia-b" id="emBtn" type="button"><i class="fas fa-face-smile"></i> Emoji</button>
-      </div>
-      <div class="em-bar" id="emBar"></div>
-      <input type="file" id="imgUp" accept="image/*" style="display:none">
-    </div>
+    <header style="padding:8px 10px;border-bottom:1px solid var(--bd);background:var(--sf);display:flex;align-items:center;gap:6px;flex-shrink:0;transition:background .4s;min-height:48px"><button class="bt bt-g bt-i" id="backBtn" title="Back" aria-label="Back to lobby"><i class="fas fa-arrow-left"></i></button><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px" id="rTtl">Room</div><div style="font-size:9px;color:var(--tx4);display:flex;align-items:center;gap:6px"><span id="rDisp" style="font-family:'JetBrains Mono',monospace"></span><span style="display:flex;align-items:center;gap:3px"><span class="on-dot live" id="onDot"></span><span id="mCnt">0</span> online</span></div></div><button class="bt bt-g" style="padding:6px 8px;font-size:10px;display:none" id="rjBtn" title="Rejoin as host" aria-label="Rejoin as host"><i class="fas fa-crown" style="color:rgb(var(--wR))"></i></button><button class="bt bt-g bt-i" style="display:none" id="adBtn" title="Admin panel" aria-label="Admin panel"><i class="fas fa-shield-halved" style="color:var(--ac)"></i></button></header>
+    <div class="pin-b" id="pinB"><i class="fas fa-thumbtack" style="color:var(--ac);flex-shrink:0;font-size:10px"></i><span id="pinT" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><button class="mo-x" style="width:20px;height:20px;font-size:9px" id="pinX" aria-label="Unpin"><i class="fas fa-xmark"></i></button></div>
+    <div style="flex:1;overflow-y:auto;position:relative;display:flex;flex-direction:column" id="mWrap"><div id="msgs" style="padding:10px 12px 2px;display:flex;flex-direction:column;gap:1px;flex:1"></div><button class="sc-btn" id="scBtn" aria-label="Scroll to bottom"><i class="fas fa-chevron-down"></i></button></div>
+    <div id="typB" style="padding:1px 12px;font-size:10px;color:var(--tx3);min-height:20px;display:flex;align-items:center;gap:5px;transition:opacity .2s;opacity:0"><div class="typ-d"><span></span><span></span><span></span></div><span id="typT"></span></div>
+    <div class="ci-wrap"><div class="rp-prev" id="rpPrev"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0"><i class="fas fa-reply" style="color:var(--ac);margin-right:3px"></i><span id="rpN"></span>: <span id="rpT2" style="color:var(--tx4)"></span></span><button class="rp-x" id="rpX" aria-label="Cancel reply"><i class="fas fa-xmark"></i></button></div><div style="position:relative"><textarea class="ci-ta" id="cInp" placeholder="Type a message..." rows="1"></textarea><button class="ci-send" id="sBtn" disabled aria-label="Send"><i class="fas fa-paper-plane"></i></button></div><div class="ia"><button class="ia-b" id="imgBtn" type="button"><i class="fas fa-image"></i> Photo</button><button class="ia-b" id="emBtn" type="button"><i class="fas fa-face-smile"></i> Emoji</button></div><div class="em-bar" id="emBar"></div><input type="file" id="imgUp" accept="image/*" style="display:none"></div>
   </div>
 </div>
 
 <script>
 const SFX={_c:null,_g(){try{if(!this._c)this._c=new(window.AudioContext||window.webkitAudioContext)();if(this._c.state==='suspended')this._c.resume();return this._c}catch(e){return null}},_p(f,d,t='sine',v=.04,sl=0){const c=this._g();if(!c)return;try{const tm=c.currentTime,o=c.createOscillator(),g=c.createGain();o.type=t;o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(f,tm);if(sl)o.frequency.exponentialRampToValueAtTime(Math.max(20,sl),tm+d);g.gain.setValueAtTime(0,tm);g.gain.linearRampToValueAtTime(v,tm+.006);g.gain.exponentialRampToValueAtTime(.001,tm+d);o.start(tm);o.stop(tm+d)}catch(e){}},send(){this._p(1100,.05,'sine',.03,650);this._p(700,.03,'triangle',.015)},recv(){this._p(660,.12,'sine',.03);setTimeout(()=>this._p(990,.15,'sine',.02),70)},join(){this._p(523,.08,'sine',.02);setTimeout(()=>this._p(659,.08,'sine',.02),60);setTimeout(()=>this._p(784,.12,'sine',.025),120)},leave(){this._p(784,.08,'sine',.015);setTimeout(()=>this._p(523,.11,'sine',.015),80)},error(){this._p(180,.15,'sawtooth',.02,90)},click(){this._p(1400,.015,'triangle',.01)},success(){this._p(523,.08,'sine',.02);setTimeout(()=>this._p(659,.08,'sine',.02),50);setTimeout(()=>this._p(784,.08,'sine',.025),100);setTimeout(()=>this._p(1047,.15,'sine',.025),150)},notify(){this._p(880,.06,'sine',.015);setTimeout(()=>this._p(1320,.08,'sine',.012),60)}};
 
-const S={room:null,admin:false,uname:'',rooms:[],users:[],msgs:[],replyId:null,pinned:null,sound:true,_tt:{},typSet:new Set(),openPk:null,imgD:null,_st:false};
+const S={room:null,admin:false,uname:'',rooms:[],filtered:[],users:[],msgs:[],replyId:null,pinned:null,sound:true,_tt:{},typSet:new Set(),openPk:null,imgD:null,_st:false,page:0,perPage:60,loaded:false};
 const RCTS=['\u{1F44D}','\u2764\uFE0F','\u{1F602}','\u{1F62E}','\u{1F525}','\u{1F44F}','\u{1F4AF}','\u{1F389}'];
 const EMOS=['\u{1F600}','\u{1F602}','\u{1F979}','\u{1F60D}','\u{1F914}','\u{1F60E}','\u{1F973}','\u{1F631}','\u{1F91D}','\u{1F44D}','\u{1F44E}','\u2764\uFE0F','\u{1F525}','\u{1F4AF}','\u{1F389}','\u{1F44F}','\u{1F62D}','\u{1F923}','\u{1F624}','\u{1FAE1}','\u2705','\u274C','\u26A1','\u{1F31F}','\u{1F4AC}','\u{1F440}','\u{1F64F}','\u{1F4AA}','\u{1F926}','\u{1FAE6}'];
 
@@ -480,10 +286,16 @@ const tAgo=t=>{const d=Date.now()-t,m=Math.floor(d/60000);if(m<1)return'now';if(
 const fTime=t=>t?new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
 function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
+// Timeout: if no lobby data after 6s, force show empty/error state
+const lobbyTimeout=setTimeout(()=>{if(!S.loaded){$('rGrid').innerHTML='';$('lStats').style.display='none';$('loadMore').style.display='none';$('lEmpty').style.display='block';$('shNote').style.display='none'}},6000);
+
 const socket=io();
 socket.on('connect',()=>{$('cs').className='cs on';$('csT').textContent='Connected';if(!S._st){toast('Connected to server','ok');SFX.join()}S._st=false;socket.emit('getLobby')});
 socket.on('disconnect',()=>{$('cs').className='cs off';$('csT').textContent='Offline'});
-socket.on('lobby',r=>{shuf(r);S.rooms=r;renderLobby(r)});
+socket.on('lobby',r=>{
+  clearTimeout(lobbyTimeout);
+  S.loaded=true;shuf(r);S.rooms=r;S.filtered=r;S.page=0;renderLobby();
+});
 socket.on('message',m=>{S.msgs.push(m);appendMsg(m);if(m.type==='system'){if(m.text.includes('joined'))SFX.join();else if(m.text.includes('left'))SFX.leave()}else if(m.type==='msg'&&m.from!==S.uname){SFX.recv();if(document.hidden)toast(m.from+': '+(m.text||'Image').slice(0,40),'inf')}scrollBot()});
 socket.on('deleteMsg',id=>{S.msgs=S.msgs.filter(m=>m.id!==id);const el=qs(`.m-bub[data-mid="${id}"]`);if(el){const w=el.closest('.m-row');if(w){w.style.transition='all .2s';w.style.opacity='0';w.style.transform='scale(.93)';setTimeout(()=>w.remove(),200)}}});
 socket.on('clearChat',()=>{S.msgs=[];$('msgs').innerHTML='';S.pinned=null;$('pinB').classList.remove('show');showEmpty()});
@@ -495,8 +307,21 @@ socket.on('settingsUpdated',d=>{$('rTtl').textContent=d.roomName});
 socket.on('kicked',()=>{SFX.error();toast('You have been kicked','er');leaveRoom()});
 socket.on('roomClosed',d=>{SFX.error();toast('Room "'+d.name+'" closed by host','er');leaveRoom()});
 
-function renderLobby(rooms){const g=$('rGrid'),e=$('lEmpty'),n=$('shNote');if(!rooms.length){g.style.display='none';e.style.display='block';n.style.display='none';return}e.style.display='none';g.style.display='grid';n.style.display=rooms.length>1?'block':'none';g.innerHTML=rooms.map((r,i)=>`<div class="rc a-card" style="animation-delay:${i*.035}s" data-rid="${r.id}"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;min-width:0"><div style="width:32px;height:32px;border-radius:var(--r2);background:${sCol(r.name)};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0">${esc(r.name.charAt(0).toUpperCase())}</div><div style="min-width:0"><div style="font-weight:600;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</div><div style="font-size:9px;color:var(--tx4);font-family:'JetBrains Mono',monospace">${r.id}</div></div></div>${r.hasPassword?'<i class="fas fa-lock" style="color:rgb(var(--wR));font-size:9px;margin-top:4px;flex-shrink:0;opacity:.55"></i>':''}</div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:10px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0"><i class="fas fa-user" style="margin-right:2px;font-size:8px;opacity:.5"></i>${esc(r.createdBy)}</div><div style="display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:6px"><span style="font-size:9px;color:var(--tx4)">${tAgo(r.createdAt)}</span><span style="display:inline-flex;align-items:center;gap:2px;padding:2px 6px;background:var(--sf2);border:1px solid var(--bd);border-radius:16px;font-size:9px;font-weight:600;color:var(--ac)"><span class="on-dot live" style="width:4px;height:4px"></span>${r.memberCount}</span></div></div></div>`).join('')}
- $('sInp').addEventListener('input',()=>{const q=$('sInp').value.toLowerCase().trim();renderLobby(q?S.rooms.filter(r=>r.name.toLowerCase().includes(q)||r.id.toLowerCase().includes(q)||r.createdBy.toLowerCase().includes(q)):S.rooms)});
+function renderLobby(){
+  const g=$('rGrid'),e=$('lEmpty'),n=$('shNote'),st=$('lStats'),lm=$('loadMore');
+  const rooms=S.filtered;
+  if(!rooms.length){g.style.display='none';g.innerHTML='';e.style.display='block';n.style.display='none';st.style.display='none';lm.style.display='none';return}
+  e.style.display='none';g.style.display='grid';n.style.display=rooms.length>1?'block':'none';
+  const end=Math.min(S.page+S.perPage,rooms.length);
+  st.style.display='block';
+  st.textContent=`Showing ${S.page+1}\u2013${end} of ${rooms.length} rooms`;
+  // Cap animation delay to 0.8s max for performance
+  const slice=rooms.slice(S.page,end);
+  g.innerHTML=slice.map((r,i)=>`<div class="rc a-card" style="animation-delay:${Math.min(i*.03,.8)}s" data-rid="${r.id}"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;min-width:0"><div style="width:32px;height:32px;border-radius:var(--r2);background:${sCol(r.name)};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0">${esc(r.name.charAt(0).toUpperCase())}</div><div style="min-width:0"><div style="font-weight:600;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</div><div style="font-size:9px;color:var(--tx4);font-family:'JetBrains Mono',monospace">${r.id}</div></div></div>${r.hasPassword?'<i class="fas fa-lock" style="color:rgb(var(--wR));font-size:9px;margin-top:4px;flex-shrink:0;opacity:.55"></i>':''}</div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:10px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0"><i class="fas fa-user" style="margin-right:2px;font-size:8px;opacity:.5"></i>${esc(r.createdBy)}</div><div style="display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:6px"><span style="font-size:9px;color:var(--tx4)">${tAgo(r.createdAt)}</span><span style="display:inline-flex;align-items:center;gap:2px;padding:2px 6px;background:var(--sf2);border:1px solid var(--bd);border-radius:16px;font-size:9px;font-weight:600;color:var(--ac)"><span class="on-dot live" style="width:4px;height:4px"></span>${r.memberCount}</span></div></div></div>`).join('');
+  lm.style.display=end<rooms.length?'block':'none';
+}
+ $('lmBtn').addEventListener('click',()=>{S.page+=S.perPage;renderLobby();scrollBot(true)});
+ $('sInp').addEventListener('input',()=>{const q=$('sInp').value.toLowerCase().trim();if(!q){S.filtered=S.rooms}else{S.filtered=S.rooms.filter(r=>r.name.toLowerCase().includes(q)||r.id.toLowerCase().includes(q)||r.createdBy.toLowerCase().includes(q))}S.page=0;renderLobby()});
 
 function openJoin(rid,rn,hp){$('jRn').textContent=rn;$('jRi').textContent=rid;$('jPw').style.display=hp?'block':'none';$('jEr').style.display='none';$('jUn').value='';$('jEm').value='';$('jPa').value='';$('jMod').dataset.rid=rid;openM('jMod');setTimeout(()=>$('jUn').focus(),100);SFX.click()}
 
@@ -508,7 +333,7 @@ function openJoin(rid,rn,hp){$('jRn').textContent=rn;$('jRi').textContent=rid;$(
 
 function enterRoom(res){S.room=res.roomId;S.admin=res.isAdmin;S.msgs=res.history||[];S.pinned=res.pinned||null;S.users=res.users||[];S.replyId=null;S.imgD=null;S.typSet.clear();$('rTtl').textContent=res.settings.roomName;$('rDisp').textContent=res.roomId;$('mCnt').textContent=S.users.length;$('adBtn').style.display=res.isAdmin?'flex':'none';$('rjBtn').style.display=res.isAdmin?'none':'flex';$('cs').style.display='none';const mc=$('msgs');mc.innerHTML='';S.msgs.forEach(m=>appendMsg(m,false));if(!S.msgs.length)showEmpty();scrollBot();if(S.pinned){$('pinB').classList.add('show');$('pinT').textContent=S.pinned.from+': '+(S.pinned.text||'Image')}else $('pinB').classList.remove('show');$('lV').style.display='none';const rv=$('rV');rv.style.display='flex';rv.style.animation='fadeUp .3s ease';$('cInp').value='';autoR($('cInp'));updSend();$('rpPrev').classList.remove('show');$('emBar').classList.remove('show');if(res.isAdmin)renderAdm();setTimeout(()=>$('cInp').focus(),300)}
 
-function leaveRoom(){if(!S.room)return;socket.emit('leaveRoom',{roomId:S.room});socket.emit('getLobby');S.room=null;S.admin=false;S.msgs=[];S.users=[];S.typSet.clear();S.replyId=null;S.imgD=null;$('rV').style.display='none';const lv=$('lV');lv.style.display='flex';lv.style.animation='fadeUp .3s ease';togAdm(false);$('cs').style.display='flex';$('sInp').value=''}
+function leaveRoom(){if(!S.room)return;socket.emit('leaveRoom',{roomId:S.room});socket.emit('getLobby');S.room=null;S.admin=false;S.msgs=[];S.users=[];S.typSet.clear();S.replyId=null;S.imgD=null;$('rV').style.display='none';const lv=$('lV');lv.style.display='flex';lv.style.animation='fadeUp .3s ease';togAdm(false);$('cs').style.display='flex';$('sInp').value='';S.filtered=S.rooms;S.page=0;renderLobby()}
 
 function showEmpty(){if($('msgs').querySelector('.chat-empty'))return;const d=document.createElement('div');d.className='chat-empty a-fade';d.innerHTML='<i class="fas fa-paper-plane"></i><p>No messages yet. Say hello to start the conversation.</p>';$('msgs').appendChild(d)}
 
