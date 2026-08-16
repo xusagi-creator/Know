@@ -209,12 +209,12 @@ io.on('connection', (socket) => {
 
 // TEMPORARY: Delete after running!
 app.get('/dev-seed-rooms', (req, res) => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const rnd = (n) => { let s = ''; for (let i = 0; i < n; i++) s += chars[Math.floor(Math.random() * chars.length)]; return s; };
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const rndCode = () => Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   let created = 0;
-  for (let i = 0; i < 300; i++) {
+  for (let i = 0; i < 100; i++) {
     const id = genId();
-    const name = rnd(4) + '-' + rnd(4);
+    const name = "Room - " + rndCode();
     rooms[id] = { id, name, password: null, createdBy: 'SeedBot', createdByEmail: 'seed@test.com', adminPasswordHash: crypto.createHash('sha256').update('p').digest('hex'), createdAt: Date.now() - Math.floor(Math.random() * 86400000), closed: false, messages: [], online: {}, captures: [], pinned: null };
     created++;
   }
