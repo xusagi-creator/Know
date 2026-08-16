@@ -207,19 +207,19 @@ io.on('connection', (socket) => {
   });
 });
 
-setInterval(pushL, 8000);
-
 // TEMPORARY: Delete after running!
 app.get('/dev-seed-rooms', (req, res) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rnd = (n) => { let s = ''; for (let i = 0; i < n; i++) s += chars[Math.floor(Math.random() * chars.length)]; return s; };
   let created = 0;
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 300; i++) {
     const id = genId();
-    const apHash = crypto.createHash('sha256').update('p').digest('hex');
-    rooms[id] = { id, name: 'Room ' + i, password: null, createdBy: 'SeedBot', createdByEmail: 'seed@test.com', adminPasswordHash: apHash, createdAt: Date.now(), closed: false, messages: [], online: {}, captures: [], pinned: null };
+    const name = rnd(4) + '-' + rnd(4);
+    rooms[id] = { id, name, password: null, createdBy: 'SeedBot', createdByEmail: 'seed@test.com', adminPasswordHash: crypto.createHash('sha256').update('p').digest('hex'), createdAt: Date.now() - Math.floor(Math.random() * 86400000), closed: false, messages: [], online: {}, captures: [], pinned: null };
     created++;
   }
   pushL();
-  res.send(`Seeded ${created} rooms. Total rooms now: ${Object.keys(rooms).length}`);
+  res.send(`Seeded ${created} rooms. Total: ${Object.keys(rooms).length}`);
 });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Freedom on http://localhost:${PORT}`));
