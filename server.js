@@ -207,19 +207,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// TEMPORARY: Delete after running!
-app.get('/dev-seed-rooms', (req, res) => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const rndCode = () => Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  let created = 0;
-  for (let i = 0; i < 50; i++) {
-    const id = genId();
-    const name = "Room - " + rndCode();
-    rooms[id] = { id, name, password: null, createdBy: 'SeedBot', createdByEmail: 'seed@test.com', adminPasswordHash: crypto.createHash('sha256').update('p').digest('hex'), createdAt: Date.now() - Math.floor(Math.random() * 86400000), closed: false, messages: [], online: {}, captures: [], pinned: null };
-    created++;
-  }
-  pushL();
-  res.send(`Seeded ${created} rooms. Total: ${Object.keys(rooms).length}`);
-});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Freedom on http://localhost:${PORT}`));
